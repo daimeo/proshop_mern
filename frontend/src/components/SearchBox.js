@@ -14,7 +14,7 @@ const SearchBox = ({ history }) => {
     };
 
     return (
-        <Form>
+        <Form onSubmit={submitHandler}>
             <Row className={"align-items-center"}>
                 <Col sm={6} className={"mx-1"}>
                     <Form.Control
