@@ -1,3 +1,10 @@
+/* Quick swap fontawesome style for Web Fonts only */
+/*:root {*/
+/*    --fa-style-family: var(--fa-style-family-classic);*/
+/*    !*--fa-style-family: var(--fa-style-family-brands);*!*/
+/*    --fa-style: 900;*/
+/*}*/
+
 main {
     min-height: 80vh;
 }

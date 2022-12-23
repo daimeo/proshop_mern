@@ -5,9 +5,11 @@ import { useDispatch, useSelector } from "react-redux";
 import Message from "../components/Message";
 import Loader from "../components/Loader";
 import { listOrders } from "../actions/orderActions";
+import { useNavigate } from "react-router-dom";
 
-const OrderListScreen = ({ history }) => {
+const OrderListScreen = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const orderList = useSelector((state) => state.orderList);
     const { loading, error, orders } = orderList;
@@ -19,9 +21,9 @@ const OrderListScreen = ({ history }) => {
         if (userInfo && userInfo.isAdmin) {
             dispatch(listOrders());
         } else {
-            history.push("/login");
+            navigate("/login");
         }
-    }, [dispatch, history, userInfo]);
+    }, [dispatch, navigate, userInfo]);
 
     return (
         <>

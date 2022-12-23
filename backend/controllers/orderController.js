@@ -17,7 +17,7 @@ const addOrderItems = asyncHandler(async (req, res) => {
 
     if (orderItems && orderItems.length === 0) {
         res.status(400);
-        throw new Error("No order items");
+        throw new Error("No order items.");
         return;
     } else {
         const order = new Order({
@@ -50,7 +50,7 @@ const getOrderById = asyncHandler(async (req, res) => {
         res.json(order);
     } else {
         res.status(404);
-        throw new Error("Order not found");
+        throw new Error("Order not found.");
     }
 });
 
@@ -75,7 +75,7 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
         res.json(updatedOrder);
     } else {
         res.status(404);
-        throw new Error("Order not found");
+        throw new Error("Order not found.");
     }
 });
 
@@ -94,16 +94,66 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => {
         res.json(updatedOrder);
     } else {
         res.status(404);
-        throw new Error("Order not found");
+        throw new Error("Order not found.");
     }
 });
 
-// @desc    Get logged in user orders
+// @desc    Get logged-in user orders
 // @route   GET /api/orders/myorders
 // @access  Private
 const getMyOrders = asyncHandler(async (req, res) => {
     const orders = await Order.find({ user: req.user._id });
+
     res.json(orders);
+});
+
+// @desc    Set an order isActive = false
+// @route   PUT /api/orders/:id/cancel
+// @access  Private
+const cancelOrder = asyncHandler(async (req, res) => {
+    const { orderStatus, canceledAt } = req.body;
+
+    // console.log("REQUEST Controller: " + req);
+
+    process.env.TZ = "Asia/Ho_Chi_Minh";
+
+    const order = await Order.findById(req.params.id);
+
+    if (order) {
+        order.isCanceled = true;
+        order.canceledAt = canceledAt;
+        order.orderStatus = orderStatus;
+        order.updatedAt = new Date().toString();
+
+        console.log("CONTROLLER: " + new Date().toString());
+
+        const updatedOrder = await order.save();
+
+        // console.log(
+        //     "cancelOrder Controller: " + JSON.stringify(order.isCanceled)
+        // );
+
+        // res.json([{ result: "SUCCESS" }, { response: updatedOrder }]);
+        res.json(updatedOrder);
+    } else {
+        res.status(404);
+        throw new Error("Order not found.");
+    }
+});
+
+// @desc    Delete order
+// @route   DELETE /api/orders/:id
+// @access  Private
+const deleteOrder = asyncHandler(async (req, res) => {
+    const order = await Order.findById(req.params.id);
+
+    if (order) {
+        await order.remove();
+        res.json({ message: "Order removed" });
+    } else {
+        res.status(404);
+        throw new Error("Order not found");
+    }
 });
 
 // @desc    Get all orders
@@ -120,5 +170,7 @@ export {
     updateOrderToPaid,
     updateOrderToDelivered,
     getMyOrders,
+    cancelOrder,
     getOrders,
+    deleteOrder,
 };

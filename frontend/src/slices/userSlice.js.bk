@@ -203,7 +203,7 @@ export const login = (email: any, password: any) => async (dispatch: any) => {
 
         const config = {
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "application/json; charset=UTF-8",
             },
         };
 
@@ -251,7 +251,7 @@ export const register =
 
             const config = {
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json; charset=UTF-8",
                 },
             };
 
@@ -334,7 +334,7 @@ export const updateUserProfile =
 
             const config = {
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json; charset=UTF-8",
                     Authorization: `Bearer ${userInfo.token}`,
                 },
             };
@@ -453,7 +453,7 @@ export const updateUser =
 
             const config = {
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json; charset=UTF-8",
                     Authorization: `Bearer ${userInfo.token}`,
                 },
             };

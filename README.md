@@ -58,6 +58,9 @@ npm install
 ### Run
 
 ```
+# Start MongoDB
+mongod --dbpath /home/andd/apps/workspace/studying/React/mongo --logpath /home/andd/apps/workspace/studying/React/log/mongodb/mongod.log --bind_ip 0.0.0.0 --auth --fork
+
 # Run frontend (:3000) & backend (:5000)
 npm run dev
 

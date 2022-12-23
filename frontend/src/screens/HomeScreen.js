@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Row, Col } from "react-bootstrap";
 import Product from "../components/Product";
@@ -10,10 +10,12 @@ import ProductCarousel from "../components/ProductCarousel";
 import Meta from "../components/Meta";
 import { listProducts } from "../actions/productActions";
 
-const HomeScreen = ({ match }) => {
-    const keyword = match.params.keyword;
+const HomeScreen = () => {
+    const params = useParams();
 
-    const pageNumber = match.params.pageNumber || 1;
+    const keyword = params.keyword;
+
+    const pageNumber = params.pageNumber || 1;
 
     const dispatch = useDispatch();
 

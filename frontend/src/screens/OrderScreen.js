@@ -1,39 +1,45 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { PayPalButton } from "react-paypal-button-v2";
-import { Link } from "react-router-dom";
+// import { PayPalButton } from "react-paypal-button-v2";
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Row, Col, ListGroup, Image, Card, Button } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import Message from "../components/Message";
 import Loader from "../components/Loader";
 import {
     getOrderDetails,
-    payOrder,
+    // payOrder,
     deliverOrder,
 } from "../actions/orderActions";
 import {
     ORDER_PAY_RESET,
     ORDER_DELIVER_RESET,
 } from "../constants/orderConstants";
+import ButtonWrapper from "../components/ButtonWrapper";
 
-const OrderScreen = ({ match, history }) => {
-    const orderId = match.params.id;
+const OrderScreen = () => {
+    const params = useParams();
+    const orderId = params.id;
 
-    const [sdkReady, setSdkReady] = useState(false);
+    // const [sdkReady, setSdkReady] = useState(false);
 
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const orderDetails = useSelector((state) => state.orderDetails);
     const { order, loading, error } = orderDetails;
 
     const orderPay = useSelector((state) => state.orderPay);
-    const { loading: loadingPay, success: successPay } = orderPay;
+    const { success: successPay } = orderPay;
 
     const orderDeliver = useSelector((state) => state.orderDeliver);
     const { loading: loadingDeliver, success: successDeliver } = orderDeliver;
 
     const userLogin = useSelector((state) => state.userLogin);
     const { userInfo } = userLogin;
+
+    const [clientId, setClientId] = useState("");
 
     if (!loading) {
         //   Calculate prices
@@ -51,19 +57,25 @@ const OrderScreen = ({ match, history }) => {
 
     useEffect(() => {
         if (!userInfo) {
-            history.push("/login");
+            navigate("/login");
         }
 
-        const addPayPalScript = async () => {
-            const { data: clientId } = await axios.get("/api/config/paypal");
-            const script = document.createElement("script");
-            script.type = "text/javascript";
-            script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}`;
-            script.async = true;
-            script.onload = () => {
-                setSdkReady(true);
-            };
-            document.body.appendChild(script);
+        // const addPayPalScript = async () => {
+        //     const { data: clientId } = await axios.get("/api/config/paypal");
+        //     const script = document.createElement("script");
+        //     script.type = "text/javascript";
+        //     script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}`;
+        //     script.async = true;
+        //     script.onload = () => {
+        //         setSdkReady(true);
+        //     };
+        //     document.body.appendChild(script);
+        // };
+
+        const getPayPalClientID = async () => {
+            const { data: clientID } = await axios.get("/api/config/paypal");
+            // console.log(clientID);
+            setClientId(clientID);
         };
 
         if (!order || successPay || successDeliver || order._id !== orderId) {
@@ -72,9 +84,10 @@ const OrderScreen = ({ match, history }) => {
             dispatch(getOrderDetails(orderId));
         } else if (!order.isPaid) {
             if (!window.paypal) {
-                addPayPalScript();
-            } else {
-                setSdkReady(true);
+                // addPayPalScript().then();
+                getPayPalClientID().then();
+                // } else {
+                //     setSdkReady(true);
             }
         }
     }, [
@@ -83,14 +96,14 @@ const OrderScreen = ({ match, history }) => {
         successPay,
         successDeliver,
         order,
-        history,
+        navigate,
         userInfo,
     ]);
 
-    const successPaymentHandler = (paymentResult) => {
-        console.log(paymentResult);
-        dispatch(payOrder(orderId, paymentResult));
-    };
+    // const successPaymentHandler = (paymentResult) => {
+    //     console.log(paymentResult);
+    //     dispatch(payOrder(orderId, paymentResult));
+    // };
 
     const deliverHandler = () => {
         dispatch(deliverOrder(order));
@@ -216,17 +229,28 @@ const OrderScreen = ({ match, history }) => {
                                     <Col>${order.totalPrice}</Col>
                                 </Row>
                             </ListGroup.Item>
+                            {/* TODO: CHECK LATEST STATE BEFORE OPEN PAYPAL WINDOWS */}
                             {!order.isPaid && (
                                 <ListGroup.Item>
-                                    {loadingPay && <Loader />}
-                                    {!sdkReady ? (
-                                        <Loader />
-                                    ) : (
-                                        <PayPalButton
-                                            amount={order.totalPrice}
-                                            onSuccess={successPaymentHandler}
-                                        />
+                                    {/*{loadingPay && <Loader />}*/}
+                                    {/*{!sdkReady ? (*/}
+                                    {/*    <Loader />*/}
+                                    {/*) : (*/}
+                                    {clientId && (
+                                        <PayPalScriptProvider
+                                            options={{
+                                                "client-id": `${clientId}`,
+                                                components: "buttons",
+                                                currency: "USD",
+                                            }}
+                                        >
+                                            <ButtonWrapper
+                                                currency={"USD"}
+                                                orderId={orderId}
+                                            />
+                                        </PayPalScriptProvider>
                                     )}
+                                    {/*)}*/}
                                 </ListGroup.Item>
                             )}
                             {loadingDeliver && <Loader />}

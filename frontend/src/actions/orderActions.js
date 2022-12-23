@@ -19,6 +19,12 @@ import {
     ORDER_DELIVER_FAIL,
     ORDER_DELIVER_SUCCESS,
     ORDER_DELIVER_REQUEST,
+    ORDER_CANCEL_FAIL,
+    ORDER_CANCEL_REQUEST,
+    ORDER_CANCEL_SUCCESS,
+    ORDER_DELETE_SUCCESS,
+    ORDER_DELETE_REQUEST,
+    ORDER_DELETE_FAIL,
 } from "../constants/orderConstants";
 import { logout } from "./userActions";
 
@@ -34,7 +40,7 @@ export const createOrder = (order) => async (dispatch, getState) => {
 
         const config = {
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "application/json; charset=UTF-8",
                 Authorization: `Bearer ${userInfo.token}`,
             },
         };
@@ -75,6 +81,10 @@ export const getOrderDetails = (id) => async (dispatch, getState) => {
             userLogin: { userInfo },
         } = getState();
 
+        // console.log("{userInfo}" + JSON.stringify(userInfo));
+        //
+        // console.log("ORDER ACTION: " + JSON.stringify(userInfo.token));
+
         const config = {
             headers: {
                 Authorization: `Bearer ${userInfo.token}`,
@@ -82,6 +92,8 @@ export const getOrderDetails = (id) => async (dispatch, getState) => {
         };
 
         const { data } = await axios.get(`/api/orders/${id}`, config);
+
+        // console.log("{DATA}" + JSON.stringify(data));
 
         dispatch({
             type: ORDER_DETAILS_SUCCESS,
@@ -255,6 +267,105 @@ export const listOrders = () => async (dispatch, getState) => {
         }
         dispatch({
             type: ORDER_LIST_FAIL,
+            payload: message,
+        });
+    }
+};
+
+export const cancelOrder =
+    (id, orderStatus, canceledAt) => async (dispatch, getState) => {
+        // console.log("ACTION before try");
+        try {
+            dispatch({ type: ORDER_CANCEL_REQUEST });
+
+            // console.log(
+            //     "ACTION after dispatch REQUEST: " +
+            //         JSON.stringify(dispatch({ type: ORDER_CANCEL_REQUEST }))
+            // );
+
+            const {
+                userLogin: { userInfo },
+            } = getState();
+
+            const config = {
+                headers: {
+                    "Content-Type": "application/json; charset=UTF-8",
+                    Authorization: `Bearer ${userInfo.token}`,
+                },
+            };
+
+            // console.log("USER TOKEN: " + userInfo.token);
+
+            // console.log("order ID in Action: " + id);
+
+            // console.log(
+            //     "cancelOrder user TOKEN: " + JSON.stringify(userInfo.token)
+            // );
+            // console.log("ACTION BEFORE Axios");
+
+            // PUT must have data if function do not send data then axios must give an empty object {}
+            const { data } = await axios.put(
+                `/api/orders/${id}`,
+                { orderStatus, canceledAt },
+                config
+            );
+            // axios.interceptors.request.use(data);
+
+            // console.log("***** ACTION AFTER Axios *****" + JSON.stringify(data));
+
+            // console.log("order ID: " + id);
+
+            // console.log("DATA: " + JSON.stringify(data));
+            // console.log("ACTION before dispatch SUCCESS");
+
+            dispatch({ type: ORDER_CANCEL_SUCCESS, payload: data });
+            // dispatch({ type: ORDER_CANCEL_SUCCESS });
+            // console.log("ACTION after dispatch SUCCESS");
+        } catch (e) {
+            const message =
+                e.response && e.response.data.message
+                    ? e.response.data.message
+                    : e.message;
+            if (message === "Not authorized, token failed") {
+                dispatch(logout());
+            }
+            console.log("ACTION FAILED");
+            dispatch({
+                type: ORDER_CANCEL_FAIL,
+                payload: message,
+            });
+        }
+    };
+
+export const deleteOrder = (id) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: ORDER_DELETE_REQUEST,
+        });
+
+        const {
+            userLogin: { userInfo },
+        } = getState();
+
+        const config = {
+            headers: {
+                Authorization: `Bearer ${userInfo.token}`,
+            },
+        };
+
+        await axios.delete(`/api/orders/${id}`, config);
+
+        dispatch({ type: ORDER_DELETE_SUCCESS, config });
+    } catch (error) {
+        const message =
+            error.response && error.response.data.message
+                ? error.response.data.message
+                : error.message;
+        if (message === "Not authorized, token failed") {
+            dispatch(logout());
+        }
+        dispatch({
+            type: ORDER_DELETE_FAIL,
             payload: message,
         });
     }

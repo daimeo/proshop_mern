@@ -36,6 +36,11 @@ const orderSchema = mongoose.Schema(
             update_time: { type: String },
             email_address: { type: String },
         },
+        itemsPrice: {
+            type: Number,
+            required: true,
+            default: 0.0,
+        },
         taxPrice: {
             type: Number,
             required: true,
@@ -51,6 +56,11 @@ const orderSchema = mongoose.Schema(
             required: true,
             default: 0.0,
         },
+        orderStatus: {
+            type: String,
+            required: false,
+            default: "New",
+        },
         isPaid: {
             type: Boolean,
             required: true,
@@ -65,6 +75,14 @@ const orderSchema = mongoose.Schema(
             default: false,
         },
         deliveredAt: {
+            type: Date,
+        },
+        isCanceled: {
+            type: Boolean,
+            required: false,
+            default: false,
+        },
+        canceledAt: {
             type: Date,
         },
     },

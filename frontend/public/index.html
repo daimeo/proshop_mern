@@ -11,13 +11,27 @@
         />
         <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
         <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+        <!-- TODO: NPM package vs Self hosted performance -->
+        <!--
+            For Content Security Policy:
+                1. Disable automatic CSS insertion.
+                2. Reference the external CSS file explicitly.
+            For quick swap font family and style using SVG + JS
+                1. data-style-default="desired_style"
+                2. data-family-default="desired_family" (optional, use Classic by default if not specify)
+         -->
+        <script
+            defer
+            src="./assets/fontawesome/js/all.min.js"
+            data-style-default="solid"
+            data-family-default="classic"
+            data-auto-add-css="false"
+        ></script>
         <link
+            href="./assets/fontawesome/css/svg-with-js.min.css"
             rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css"
-            integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog=="
-            crossorigin="anonymous"
         />
-        <title>Welcome To ProShop</title>
+        <title>Welcome To DemoShop</title>
     </head>
     <body>
         <noscript>You need to enable JavaScript to run this app.</noscript>

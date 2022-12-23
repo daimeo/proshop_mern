@@ -21,6 +21,12 @@ import {
     ORDER_DELIVER_REQUEST,
     ORDER_DELIVER_RESET,
     ORDER_CREATE_RESET,
+    ORDER_CANCEL_REQUEST,
+    ORDER_CANCEL_SUCCESS,
+    ORDER_CANCEL_FAIL,
+    ORDER_DELETE_REQUEST,
+    ORDER_DELETE_SUCCESS,
+    ORDER_DELETE_FAIL,
 } from "../constants/orderConstants";
 
 export const orderCreateReducer = (state = {}, action) => {
@@ -123,10 +129,12 @@ export const orderListMyReducer = (state = { orders: [] }, action) => {
         case ORDER_LIST_MY_REQUEST:
             return {
                 loading: true,
+                // success: false,
             };
         case ORDER_LIST_MY_SUCCESS:
             return {
                 loading: false,
+                // success: true,
                 orders: action.payload,
             };
         case ORDER_LIST_MY_FAIL:
@@ -157,6 +165,45 @@ export const orderListReducer = (state = { orders: [] }, action) => {
                 loading: false,
                 error: action.payload,
             };
+        default:
+            return state;
+    }
+};
+
+export const orderCancelReducer = (state = {}, action) => {
+    switch (action.type) {
+        case ORDER_CANCEL_REQUEST:
+            return {
+                loading: true,
+            };
+        case ORDER_CANCEL_SUCCESS:
+            return {
+                loading: false,
+                success: true,
+                // order: action.payload,
+            };
+        case ORDER_CANCEL_FAIL:
+            return {
+                loading: false,
+                error: action.payload,
+            };
+        case ORDER_PAY_RESET:
+            return {};
+        case ORDER_DELIVER_RESET:
+            return {};
+        default:
+            return state;
+    }
+};
+
+export const orderDeleteReducer = (state = {}, action) => {
+    switch (action.type) {
+        case ORDER_DELETE_REQUEST:
+            return { loading: true };
+        case ORDER_DELETE_SUCCESS:
+            return { loading: false, success: true };
+        case ORDER_DELETE_FAIL:
+            return { loading: false, error: action.payload };
         default:
             return state;
     }

@@ -11,11 +11,14 @@ import {
     createProduct,
 } from "../actions/productActions";
 import { PRODUCT_CREATE_RESET } from "../constants/productConstants";
+import { useNavigate, useParams } from "react-router-dom";
 
-const ProductListScreen = ({ history, match }) => {
-    const pageNumber = match.params.pageNumber || 1;
+const ProductListScreen = () => {
+    const params = useParams();
+    const pageNumber = params.pageNumber || 1;
 
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const productList = useSelector((state) => state.productList);
     const { loading, error, products, page, pages } = productList;
@@ -42,17 +45,17 @@ const ProductListScreen = ({ history, match }) => {
         dispatch({ type: PRODUCT_CREATE_RESET });
 
         if (!userInfo || !userInfo.isAdmin) {
-            history.push("/login");
+            navigate("/login");
         }
 
         if (successCreate) {
-            history.push(`/admin/product/${createdProduct._id}/edit`);
+            navigate(`/admin/product/${createdProduct._id}/edit`);
         } else {
             dispatch(listProducts("", pageNumber));
         }
     }, [
         dispatch,
-        history,
+        navigate,
         userInfo,
         successDelete,
         successCreate,

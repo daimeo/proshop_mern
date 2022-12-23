@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button, Row, Col, ListGroup, Image, Card } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import Message from "../components/Message";
@@ -8,16 +8,18 @@ import { createOrder } from "../actions/orderActions";
 import { ORDER_CREATE_RESET } from "../constants/orderConstants";
 import { USER_DETAILS_RESET } from "../constants/userConstants";
 
-const PlaceOrderScreen = ({ history }) => {
+const PlaceOrderScreen = () => {
     const dispatch = useDispatch();
 
     const cart = useSelector((state) => state.cart);
+    const navigate = useNavigate();
 
-    if (!cart.shippingAddress.address) {
-        history.push("/shipping");
-    } else if (!cart.paymentMethod) {
-        history.push("/payment");
-    }
+    // if (!cart.shippingAddress.address) {
+    //     navigate("/shipping");
+    // } else if (!cart.paymentMethod) {
+    //     navigate("/payment");
+    // }
+
     //   Calculate prices
     const addDecimals = (num) => {
         return (Math.round(num * 100) / 100).toFixed(2);
@@ -38,13 +40,18 @@ const PlaceOrderScreen = ({ history }) => {
     const { order, success, error } = orderCreate;
 
     useEffect(() => {
+        if (!cart.shippingAddress.address) {
+            navigate("/shipping");
+        } else if (!cart.paymentMethod) {
+            navigate("/payment");
+        }
         if (success) {
-            history.push(`/order/${order._id}`);
+            navigate(`/order/${order._id}`);
             dispatch({ type: USER_DETAILS_RESET });
             dispatch({ type: ORDER_CREATE_RESET });
         }
         // eslint-disable-next-line
-    }, [history, success]);
+    }, [cart, dispatch, navigate, success]);
 
     const placeOrderHandler = () => {
         dispatch(
