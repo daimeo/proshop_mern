@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 // import moment from "moment";
 import moment from "moment-timezone";
 import { DateTime } from "luxon";
+// import Breadcrumbs from "../components/Breadcrumbs";
 
 const ProfileScreen = () => {
     const [name, setName] = useState("");
@@ -166,6 +167,7 @@ const ProfileScreen = () => {
 
     return (
         <>
+            {/*<Breadcrumbs />*/}
             <Button type={"button"} variant={"light"} onClick={() => goBack()}>
                 Go Back
             </Button>
@@ -256,7 +258,9 @@ const ProfileScreen = () => {
                                     <th>STATUS</th>
                                     <th>PAID</th>
                                     <th>DELIVERED</th>
-                                    <th>ACTIONS</th>
+                                    <th>
+                                        <i className={"fa-solid fa-gear"}></i>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -272,6 +276,13 @@ const ProfileScreen = () => {
                                                 <span className={"text-info"}>
                                                     {order.orderStatus}
                                                 </span>
+                                            ) : order.orderStatus ===
+                                              "Confirmed" ? (
+                                                <span
+                                                    className={"text-success"}
+                                                >
+                                                    {order.orderStatus}
+                                                </span>
                                             ) : (
                                                 <span className={"text-danger"}>
                                                     {order.orderStatus}
@@ -282,37 +293,40 @@ const ProfileScreen = () => {
                                             {/* TODO: Convert to dd/MM/yyyy hh:mm:ss UTC +7 */}
                                             {order.isPaid ? (
                                                 <span>
-                                                    {order.paidAt}
-                                                    {/*//.substring(0, 10)*/}
+                                                    {order.paidAt}{" "}
                                                     <i
-                                                        className="fa-regular fa-circle-xmark fa-beat-fade"
-                                                        style={{
-                                                            color: "red",
-                                                        }}
+                                                        className="fa-regular fa-circle-xmark fa-bounce"
+                                                        color={"green"}
                                                     ></i>
                                                 </span>
                                             ) : (
-                                                // <i
-                                                //     className="fa-solid fa-circle-xmark"
-                                                //     style={{ color: "red" }}
-                                                // ></i>
-                                                <i
-                                                    className="fa-regular fa-circle-xmark fa-beat-fade"
-                                                    style={{ color: "red" }}
-                                                ></i>
+                                                <span>
+                                                    <i
+                                                        className="fa-regular fa-circle-xmark fa-beat-fade"
+                                                        color={"red"}
+                                                    ></i>
+                                                </span>
                                             )}
                                         </td>
                                         <td>
                                             {order.isDelivered ? (
-                                                order.deliveredAt.substring(
-                                                    0,
-                                                    10
-                                                )
+                                                <span>
+                                                    {order.deliveredAt.substring(
+                                                        0,
+                                                        10
+                                                    )}{" "}
+                                                    <i
+                                                        className="fa-regular fa-circle-xmark fa-bounce"
+                                                        color={"green"}
+                                                    ></i>
+                                                </span>
                                             ) : (
-                                                <i
-                                                    className="fa-regular fa-circle-xmark fa-beat-fade"
-                                                    style={{ color: "red" }}
-                                                ></i>
+                                                <span>
+                                                    <i
+                                                        className="fa-regular fa-circle-xmark fa-spin"
+                                                        color={"red"}
+                                                    ></i>
+                                                </span>
                                             )}
                                         </td>
                                         <td>
@@ -348,10 +362,10 @@ const ProfileScreen = () => {
                                                 <Button
                                                     className="btn-sm mx-2"
                                                     variant="light"
-                                                    // disabled={
-                                                    //     order.orderStatus !==
-                                                    //     "New"
-                                                    // }
+                                                    disabled={
+                                                        order.orderStatus !==
+                                                        "New"
+                                                    }
                                                     onClick={() => {
                                                         cancelOrderHandler(
                                                             order._id

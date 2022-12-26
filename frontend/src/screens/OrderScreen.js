@@ -230,7 +230,7 @@ const OrderScreen = () => {
                                 </Row>
                             </ListGroup.Item>
                             {/* TODO: CHECK LATEST STATE BEFORE OPEN PAYPAL WINDOWS */}
-                            {!order.isPaid && (
+                            {!order.isCanceled && !order.isPaid && (
                                 <ListGroup.Item>
                                     {/*{loadingPay && <Loader />}*/}
                                     {/*{!sdkReady ? (*/}
@@ -239,12 +239,19 @@ const OrderScreen = () => {
                                     {clientId && (
                                         <PayPalScriptProvider
                                             options={{
-                                                "client-id": `${clientId}`,
+                                                "client-id": clientId,
                                                 components: "buttons",
                                                 currency: "USD",
+                                                "disable-funding": "card",
                                             }}
                                         >
                                             <ButtonWrapper
+                                                style={{
+                                                    shape: "pill",
+                                                    color: "gold",
+                                                    layout: "vertical",
+                                                    label: "buynow",
+                                                }}
                                                 currency={"USD"}
                                                 orderId={orderId}
                                             />

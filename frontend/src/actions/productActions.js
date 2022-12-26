@@ -118,6 +118,7 @@ export const createProduct = () => async (dispatch, getState) => {
 
         const config = {
             headers: {
+                "Content-Type": "application/json; charset=utf-8",
                 Authorization: `Bearer ${userInfo.token}`,
             },
         };

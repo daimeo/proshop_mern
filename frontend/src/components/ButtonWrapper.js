@@ -8,7 +8,7 @@ import Loader from "./Loader";
 // These values are the props in the UI
 // const amount = "2";
 // const currency = "USD";
-const style = {
+const defaultStyle = {
     shape: "pill",
     color: "blue",
     layout: "vertical",
@@ -16,7 +16,7 @@ const style = {
     label: "buynow",
 };
 // Custom component to wrap the PayPalButtons and handle currency changes
-const ButtonWrapper = ({ currency, orderId }) => {
+const ButtonWrapper = ({ style, currency, orderId }) => {
     // usePayPalScriptReducer can be use only inside children of PayPalScriptProviders
     // This is the main reason to wrap the PayPalButtons in a new component
     const [{ options, isPending, isRejected, isResolved }] =
@@ -40,10 +40,10 @@ const ButtonWrapper = ({ currency, orderId }) => {
         });
     }, [currency, dispatch, options]);
 
-    const createOrderHandler = (data, actions) => {
-        window.location.reload();
-        if (!order.isCanceled) {
-            return actions.order.create({
+    const createOrderHandler = async (data, actions) => {
+        // window.location.reload();
+        if (order && !order.isCanceled) {
+            return await actions.order.create({
                 purchase_units: [
                     {
                         amount: {
@@ -56,8 +56,8 @@ const ButtonWrapper = ({ currency, orderId }) => {
         }
     };
 
-    const successPaymentHandler = (data, actions) => {
-        return actions.order.capture().then((paymentResult) => {
+    const successPaymentHandler = async (data, actions) => {
+        return await actions.order.capture().then((paymentResult) => {
             console.log(paymentResult);
             dispatch(payOrder(orderId, paymentResult));
         });
@@ -71,7 +71,7 @@ const ButtonWrapper = ({ currency, orderId }) => {
             )}
             {isResolved && (
                 <PayPalButtons
-                    style={style}
+                    style={style ? style : defaultStyle}
                     disabled={false}
                     forceReRender={[amount, currency, style]}
                     // fundingSource={undefined}

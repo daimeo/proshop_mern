@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Link, Route, Routes } from "react-router-dom";
 import { Container } from "react-bootstrap";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -35,10 +35,27 @@ const App = () => {
                         />
                         <Route path="/login" element={<LoginScreen />} />
                         <Route path="/register" element={<RegisterScreen />} />
-                        <Route path="/profile" element={<ProfileScreen />} />
+                        <Route
+                            path="/profile"
+                            element={<ProfileScreen />}
+                            handle={{
+                                // you can put whatever you want on a route handle
+                                // here we use "crumb" and return some elements,
+                                // this is what we'll render in the breadcrumbs
+                                // for this route
+                                crumb: () => (
+                                    <Link to={"/profile"}>Profile</Link>
+                                ),
+                            }}
+                        />
                         <Route
                             path="/product/:id"
                             element={<ProductScreen />}
+                            handle={{
+                                crumb: (data) => (
+                                    <span>{data.product.name}</span>
+                                ),
+                            }}
                         />
                         <Route path="/cart/" element={<CartScreen />}>
                             <Route path=":id" element={<CartScreen />} />

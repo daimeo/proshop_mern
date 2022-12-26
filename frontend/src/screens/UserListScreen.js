@@ -49,7 +49,9 @@ const UserListScreen = () => {
                             <th>NAME</th>
                             <th>EMAIL</th>
                             <th>ADMIN</th>
-                            <th></th>
+                            <th>
+                                <i className={"fa-solid fa-gear"}></i>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -65,12 +67,12 @@ const UserListScreen = () => {
                                 <td>
                                     {user.isAdmin ? (
                                         <i
-                                            className="fas fa-check"
+                                            className="fa-solid fa-check"
                                             style={{ color: "green" }}
                                         ></i>
                                     ) : (
                                         <i
-                                            className="fas fa-times"
+                                            className="fa-solid fa-times"
                                             style={{ color: "red" }}
                                         ></i>
                                     )}
@@ -83,7 +85,7 @@ const UserListScreen = () => {
                                             variant="light"
                                             className="btn-sm"
                                         >
-                                            <i className="fas fa-edit"></i>
+                                            <i className="fa-solid fa-edit"></i>
                                         </Button>
                                     </LinkContainer>
                                     <Button
@@ -91,7 +93,7 @@ const UserListScreen = () => {
                                         className="btn-sm"
                                         onClick={() => deleteHandler(user._id)}
                                     >
-                                        <i className="fas fa-trash"></i>
+                                        <i className="fa-solid fa-trash"></i>
                                     </Button>
                                 </td>
                             </tr>

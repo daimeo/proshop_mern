@@ -19,6 +19,7 @@ import {
     createProductReview,
 } from "../actions/productActions";
 import { PRODUCT_CREATE_REVIEW_RESET } from "../constants/productConstants";
+// import Breadcrumbs from "../components/Breadcrumbs";
 
 const ProductScreen = () => {
     const [qty, setQty] = useState(1);
@@ -58,6 +59,7 @@ const ProductScreen = () => {
 
     const addToCartHandler = () => {
         // history.push(`/cart/${id}?qty=${qty}`);
+        // navigate(`/cart/${id}?qty=${qty}`);
         navigate(`/cart/${id}?qty=${qty}`);
     };
 
@@ -73,6 +75,7 @@ const ProductScreen = () => {
 
     return (
         <>
+            {/*<Breadcrumbs />*/}
             <Link className="btn btn-light my-3" to="/">
                 Go Back
             </Link>
