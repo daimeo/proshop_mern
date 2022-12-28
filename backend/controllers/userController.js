@@ -215,6 +215,37 @@ const disableUser = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc    Logout user
+// @route   PUT /api/users/logout
+// @access  Private
+const logoutUser = asyncHandler(async (req, res) => {
+    const { id } = req.body;
+
+    console.log("ID: " + JSON.stringify(id));
+
+    const user = await User.findById(id);
+
+    console.log("USER ID: " + JSON.stringify(user._id));
+
+    if (user && !user.isDisabled) {
+        res.json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            isAdmin: user.isAdmin,
+            isEditor: user.isEditor,
+            isDisabled: user.isDisabled,
+            token: await generateToken(user._id, 5),
+        });
+    } else if (user && user.isDisabled) {
+        res.status(401);
+        throw new Error("Your account is disabled!");
+    } else {
+        res.status(401);
+        throw new Error("Invalid email or password");
+    }
+});
+
 export {
     authUser,
     registerUser,
@@ -225,4 +256,5 @@ export {
     getUserById,
     updateUser,
     disableUser,
+    logoutUser,
 };

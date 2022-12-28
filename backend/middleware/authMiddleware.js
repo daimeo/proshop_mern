@@ -23,7 +23,7 @@ const protect = asyncHandler(async (req, res, next) => {
                 algorithms: ["HS512"],
             });
 
-            // console.log("DECODED: " + JSON.stringify(decoded));
+            console.log("DECODED: " + JSON.stringify(decoded));
 
             req.user = await User.findById(decoded.id).select("-password");
 

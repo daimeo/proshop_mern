@@ -1,11 +1,14 @@
 import jwt from "jsonwebtoken";
 // import * as jose from "jose";
 
-const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRATION_TIME,
+const generateToken = async (id, expiresIn) => {
+    const token = await jwt.sign({ id }, process.env.JWT_SECRET, {
+        expiresIn: expiresIn ? expiresIn : process.env.JWT_EXPIRATION_TIME,
         algorithm: "HS512",
     });
+    console.log("TOKEN SIGN: " + JSON.stringify(token));
+
+    return token;
 };
 
 // const secretKey = new TextEncoder().encode(
