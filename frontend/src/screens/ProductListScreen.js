@@ -48,8 +48,16 @@ const ProductListScreen = () => {
             navigate("/login");
         }
 
+        // if (!userInfo || !userInfo.isEditor) {
+        //     navigate("/login");
+        // }
+
         if (successCreate) {
+            // if (userInfo.isAdmin) {
             navigate(`/admin/product/${createdProduct._id}/edit`);
+            // } else if (userInfo.isEditor) {
+            //     navigate(`/editor/product/${createdProduct._id}/edit`);
+            // }
         } else {
             dispatch(listProducts("", pageNumber));
         }
@@ -123,7 +131,13 @@ const ProductListScreen = () => {
                                     <td>{product.brand}</td>
                                     <td>
                                         <LinkContainer
-                                            to={`/admin/product/${product._id}/edit`}
+                                            to={
+                                                userInfo.isAdmin
+                                                    ? `/admin/product/${product._id}/edit`
+                                                    : // : userInfo.isEditor
+                                                      // ? `/editor/product/${product._id}/edit`
+                                                      "/login"
+                                            }
                                         >
                                             <Button
                                                 variant="light"
@@ -146,7 +160,12 @@ const ProductListScreen = () => {
                             ))}
                         </tbody>
                     </Table>
-                    <Paginate pages={pages} page={page} isAdmin={true} />
+                    <Paginate
+                        pages={pages}
+                        page={page}
+                        isAdmin={true}
+                        isEditor={true}
+                    />
                 </>
             )}
         </>

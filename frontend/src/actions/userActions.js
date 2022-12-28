@@ -24,6 +24,9 @@ import {
     USER_UPDATE_FAIL,
     USER_UPDATE_SUCCESS,
     USER_UPDATE_REQUEST,
+    USER_DISABLE_REQUEST,
+    USER_DISABLE_SUCCESS,
+    USER_DISABLE_FAIL,
 } from "../constants/userConstants";
 import { ORDER_LIST_MY_RESET } from "../constants/orderConstants";
 
@@ -311,3 +314,47 @@ export const updateUser = (user) => async (dispatch, getState) => {
         });
     }
 };
+
+export const disableUser =
+    (id, isDisabled, disabledAt) => async (dispatch, getState) => {
+        try {
+            dispatch({
+                type: USER_DISABLE_REQUEST,
+            });
+
+            const {
+                userLogin: { userInfo },
+            } = getState();
+
+            const config = {
+                headers: {
+                    "Content-Type": "application/json; charset=UTF-8",
+                    Authorization: `Bearer ${userInfo.token}`,
+                },
+            };
+
+            const { data } = await axios.put(
+                `/api/users/${id}/disable`,
+                { isDisabled, disabledAt },
+                config
+            );
+
+            dispatch({ type: USER_DISABLE_SUCCESS, payload: data });
+
+            // dispatch({ type: USER_DETAILS_SUCCESS, payload: data });
+
+            // dispatch({ type: USER_DETAILS_RESET });
+        } catch (error) {
+            const message =
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message;
+            if (message === "Not authorized, token failed") {
+                dispatch(logout());
+            }
+            dispatch({
+                type: USER_DISABLE_FAIL,
+                payload: message,
+            });
+        }
+    };

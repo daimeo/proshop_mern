@@ -48,6 +48,30 @@ const Header = () => {
                                             Profile
                                         </NavDropdown.Item>
                                     </LinkContainer>
+                                    {/*<NavDropdown.Divider />*/}
+                                    {/*{userInfo && userInfo.isAdmin && (*/}
+                                    {/*    <NavDropdown*/}
+                                    {/*        title="Admin Menu"*/}
+                                    {/*        id="adminmenu"*/}
+                                    {/*    >*/}
+                                    {/*        <LinkContainer to="/admin/userlist">*/}
+                                    {/*            <NavDropdown.Item>*/}
+                                    {/*                Users*/}
+                                    {/*            </NavDropdown.Item>*/}
+                                    {/*        </LinkContainer>*/}
+                                    {/*        <LinkContainer to="/admin/productlist">*/}
+                                    {/*            <NavDropdown.Item>*/}
+                                    {/*                Products*/}
+                                    {/*            </NavDropdown.Item>*/}
+                                    {/*        </LinkContainer>*/}
+                                    {/*        <LinkContainer to="/admin/orderlist">*/}
+                                    {/*            <NavDropdown.Item>*/}
+                                    {/*                Orders*/}
+                                    {/*            </NavDropdown.Item>*/}
+                                    {/*        </LinkContainer>*/}
+                                    {/*    </NavDropdown>*/}
+                                    {/*)}*/}
+                                    {/*<NavDropdown.Divider />*/}
                                     <NavDropdown.Item onClick={logoutHandler}>
                                         Logout
                                     </NavDropdown.Item>
@@ -60,7 +84,7 @@ const Header = () => {
                                 </LinkContainer>
                             )}
                             {userInfo && userInfo.isAdmin && (
-                                <NavDropdown title="Admin" id="adminmenu">
+                                <NavDropdown title="Admin Menu" id="adminmenu">
                                     <LinkContainer to="/admin/userlist">
                                         <NavDropdown.Item>
                                             Users
@@ -78,6 +102,18 @@ const Header = () => {
                                     </LinkContainer>
                                 </NavDropdown>
                             )}
+                            {/*{userInfo && userInfo.isEditor && (*/}
+                            {/*    <NavDropdown*/}
+                            {/*        title="Editor Menu"*/}
+                            {/*        id="editormenu"*/}
+                            {/*    >*/}
+                            {/*        <LinkContainer to="/editor/productlist">*/}
+                            {/*            <NavDropdown.Item>*/}
+                            {/*                Products*/}
+                            {/*            </NavDropdown.Item>*/}
+                            {/*        </LinkContainer>*/}
+                            {/*    </NavDropdown>*/}
+                            {/*)}*/}
                         </Nav>
                     </Navbar.Collapse>
                 </Container>

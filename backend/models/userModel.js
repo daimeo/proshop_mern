@@ -21,6 +21,19 @@ const userSchema = mongoose.Schema(
             required: true,
             default: false,
         },
+        isEditor: {
+            type: Boolean,
+            required: true,
+            default: false,
+        },
+        isDisabled: {
+            type: Boolean,
+            required: false,
+            default: false,
+        },
+        disabledAt: {
+            type: Date,
+        },
     },
     {
         timestamps: true,

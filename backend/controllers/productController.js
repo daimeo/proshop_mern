@@ -41,7 +41,7 @@ const getProductById = asyncHandler(async (req, res) => {
 
 // @desc    Delete a product
 // @route   DELETE /api/products/:id
-// @access  Private/Admin
+// @access  Private/Admin;Editor
 const deleteProduct = asyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id);
 
@@ -56,7 +56,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
 // @desc    Create a product
 // @route   POST /api/products
-// @access  Private/Admin
+// @access  Private/Admin;Editor
 const createProduct = asyncHandler(async (req, res) => {
     const product = new Product({
         name: "Sample name",
@@ -76,7 +76,7 @@ const createProduct = asyncHandler(async (req, res) => {
 
 // @desc    Update a product
 // @route   PUT /api/products/:id
-// @access  Private/Admin
+// @access  Private/Admin;Editor
 const updateProduct = asyncHandler(async (req, res) => {
     const { name, price, description, image, brand, category, countInStock } =
         req.body;
@@ -141,7 +141,7 @@ const createProductReview = asyncHandler(async (req, res) => {
     }
 });
 
-// @desc    Get top rated products
+// @desc    Get top-rated products
 // @route   GET /api/products/top
 // @access  Public
 const getTopProducts = asyncHandler(async (req, res) => {

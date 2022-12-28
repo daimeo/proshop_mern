@@ -35,10 +35,17 @@ const ProductEditScreen = () => {
         success: successUpdate,
     } = productUpdate;
 
+    const userLogin = useSelector((state) => state.userLogin);
+    const { userInfo } = userLogin;
+
     useEffect(() => {
         if (successUpdate) {
             dispatch({ type: PRODUCT_UPDATE_RESET });
+            // if (userInfo.isAdmin) {
             navigate("/admin/productlist");
+            // } else if (userInfo.isEditor) {
+            //     navigate("/editor/productlist");
+            // }
         } else {
             if (!product.name || product._id !== productId) {
                 dispatch(listProductDetails(productId));
@@ -52,12 +59,14 @@ const ProductEditScreen = () => {
                 setDescription(product.description);
             }
         }
-    }, [dispatch, navigate, productId, product, successUpdate]);
+    }, [dispatch, navigate, productId, product, successUpdate, userInfo]);
 
     const uploadFileHandler = async (e) => {
         const file = e.target.files[0];
+        console.log("UPLOAD FILE: " + file);
         const formData = new FormData();
         formData.append("image", file);
+
         setUploading(true);
 
         try {
@@ -69,6 +78,7 @@ const ProductEditScreen = () => {
 
             const { data } = await axios.post("/api/upload", formData, config);
 
+            console.log("UPLOAD DATA: " + JSON.stringify(data));
             setImage(data);
             setUploading(false);
         } catch (error) {
@@ -95,7 +105,16 @@ const ProductEditScreen = () => {
 
     return (
         <>
-            <Link to="/admin/productlist" className="btn btn-light my-3">
+            <Link
+                to={
+                    userInfo && userInfo.isAdmin
+                        ? "/admin/productlist"
+                        : // : userInfo.isEditor
+                          // ? "/editor/productlist"
+                          "/"
+                }
+                className="btn btn-light my-3"
+            >
                 Go Back
             </Link>
             <FormContainer>
@@ -126,24 +145,34 @@ const ProductEditScreen = () => {
                                 type="number"
                                 placeholder="Enter price"
                                 value={price}
-                                onChange={(e) => setPrice(e.target.value)}
+                                onChange={(e) =>
+                                    setPrice(Number(e.target.value))
+                                }
                             ></Form.Control>
                         </Form.Group>
 
                         <Form.Group controlId="image">
                             <Form.Label>Image</Form.Label>
+                            {/*<Form.Control*/}
+                            {/*    type="text"*/}
+                            {/*    placeholder="Enter image url"*/}
+                            {/*    value={image}*/}
+                            {/*    onChange={(e) => setImage(e.target.value)}*/}
+                            {/*></Form.Control>*/}
+                            {/*<Form.File*/}
+                            {/*    id="image-file"*/}
+                            {/*    label="Choose File"*/}
+                            {/*    custom*/}
+                            {/*    onChange={uploadFileHandler}*/}
+                            {/*></Form.File>*/}
                             <Form.Control
-                                type="text"
-                                placeholder="Enter image url"
-                                value={image}
-                                onChange={(e) => setImage(e.target.value)}
-                            ></Form.Control>
-                            <Form.File
-                                id="image-file"
+                                type="file"
                                 label="Choose File"
-                                custom
-                                onChange={uploadFileHandler}
-                            ></Form.File>
+                                onChange={async (event) => {
+                                    await uploadFileHandler(event.target.value);
+                                    // await setImage(event.target.value);
+                                }}
+                            ></Form.Control>
                             {uploading && <Loader />}
                         </Form.Group>
 

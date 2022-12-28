@@ -25,6 +25,9 @@ import {
     USER_UPDATE_SUCCESS,
     USER_UPDATE_FAIL,
     USER_UPDATE_PROFILE_RESET,
+    USER_DISABLE_FAIL,
+    USER_DISABLE_SUCCESS,
+    USER_DISABLE_REQUEST,
 } from "../constants/userConstants";
 
 export const userLoginReducer = (state = {}, action) => {
@@ -127,6 +130,19 @@ export const userUpdateReducer = (state = { user: {} }, action) => {
             return {
                 user: {},
             };
+        default:
+            return state;
+    }
+};
+
+export const userDisableReducer = (state = { user: {} }, action) => {
+    switch (action.type) {
+        case USER_DISABLE_REQUEST:
+            return { loading: true };
+        case USER_DISABLE_SUCCESS:
+            return { loading: false, success: true };
+        case USER_DISABLE_FAIL:
+            return { loading: false, error: action.payload };
         default:
             return state;
     }

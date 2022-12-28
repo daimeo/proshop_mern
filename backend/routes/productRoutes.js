@@ -12,12 +12,16 @@ import {
 import { protect, admin } from "../middleware/authMiddleware.js";
 
 router.route("/").get(getProducts).post(protect, admin, createProduct);
+// .post(protect, editor, createProduct);
 router.route("/:id/reviews").post(protect, createProductReview);
 router.get("/top", getTopProducts);
 router
     .route("/:id")
     .get(getProductById)
     .delete(protect, admin, deleteProduct)
+    // .delete(protect, editor, deleteProduct)
     .put(protect, admin, updateProduct);
+// .put(protect, admin, editor, updateProduct);
+// .put(protect, editor, updateProduct);
 
 export default router;

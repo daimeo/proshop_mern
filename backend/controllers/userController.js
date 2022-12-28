@@ -12,14 +12,23 @@ const authUser = asyncHandler(async (req, res) => {
 
     console.log("USER ID: " + JSON.stringify(user._id));
 
-    if (user && (await user.matchPassword(password))) {
+    if (user && !user.isDisabled && (await user.matchPassword(password))) {
         res.json({
             _id: user._id,
             name: user.name,
             email: user.email,
             isAdmin: user.isAdmin,
+            isEditor: user.isEditor,
+            isDisabled: user.isDisabled,
             token: await generateToken(user._id),
         });
+    } else if (
+        user &&
+        user.isDisabled &&
+        (await user.matchPassword(password))
+    ) {
+        res.status(401);
+        throw new Error("Your account is disabled!");
     } else {
         res.status(401);
         throw new Error("Invalid email or password");
@@ -51,6 +60,7 @@ const registerUser = asyncHandler(async (req, res) => {
             name: user.name,
             email: user.email,
             isAdmin: user.isAdmin,
+            isEditor: user.isEditor,
             token: generateToken(user._id),
         });
     } else {
@@ -71,6 +81,8 @@ const getUserProfile = asyncHandler(async (req, res) => {
             name: user.name,
             email: user.email,
             isAdmin: user.isAdmin,
+            isEditor: user.isEditor,
+            isDisabled: user.isDisabled,
         });
     } else {
         res.status(404);
@@ -98,6 +110,8 @@ const updateUserProfile = asyncHandler(async (req, res) => {
             name: updatedUser.name,
             email: updatedUser.email,
             isAdmin: updatedUser.isAdmin,
+            isEditor: updatedUser.isEditor,
+            isDisabled: updatedUser.isDisabled,
             token: generateToken(updatedUser._id),
         });
     } else {
@@ -153,6 +167,9 @@ const updateUser = asyncHandler(async (req, res) => {
         user.name = req.body.name || user.name;
         user.email = req.body.email || user.email;
         user.isAdmin = req.body.isAdmin;
+        user.isEditor = req.body.isEditor;
+        user.isDisabled = req.body.isDisabled;
+        user.disabledAt = req.body.disabledAt;
 
         const updatedUser = await user.save();
 
@@ -161,10 +178,40 @@ const updateUser = asyncHandler(async (req, res) => {
             name: updatedUser.name,
             email: updatedUser.email,
             isAdmin: updatedUser.isAdmin,
+            isEditor: updatedUser.isEditor,
+            isDisabled: updatedUser.isDisabled,
+            disabledAt: updatedUser.disabledAt,
         });
     } else {
         res.status(404);
         throw new Error("User not found");
+    }
+});
+
+// @desc    Disable user
+// @route   PUT /api/users/:id/disable
+// @access  Private/Admin
+const disableUser = asyncHandler(async (req, res) => {
+    const { isDisabled, disabledAt } = req.body;
+
+    const user = await User.findById(req.params.id);
+
+    process.env.TZ = "Asia/Ho_Chi_Minh";
+
+    if (user) {
+        user.isDisabled = isDisabled;
+        user.disabledAt = disabledAt;
+        user.updatedAt = Date.now();
+
+        const updatedUser = await user.save();
+
+        // await user.remove();
+        // res.json({ message: "User disabled." });
+
+        res.json(updatedUser);
+    } else {
+        res.status(404);
+        throw new Error("User not found!");
     }
 });
 
@@ -177,4 +224,5 @@ export {
     deleteUser,
     getUserById,
     updateUser,
+    disableUser,
 };

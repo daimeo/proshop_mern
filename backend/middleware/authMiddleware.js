@@ -17,13 +17,13 @@ const protect = asyncHandler(async (req, res, next) => {
         try {
             token = req.headers.authorization.split(" ")[1];
 
-            console.log("TOKEN: " + token);
+            // console.log("TOKEN: " + token);
 
             const decoded = jwt.verify(token, process.env.JWT_SECRET, {
                 algorithms: ["HS512"],
             });
 
-            console.log("DECODED: " + JSON.stringify(decoded));
+            // console.log("DECODED: " + JSON.stringify(decoded));
 
             req.user = await User.findById(decoded.id).select("-password");
 
@@ -87,8 +87,17 @@ const admin = (req, res, next) => {
         next();
     } else {
         res.status(401);
-        throw new Error("Not authorized as an admin");
+        throw new Error("Not authorized as an admin!");
     }
 };
 
-export { protect, admin };
+const editor = (req, res, next) => {
+    if (req.user && req.user.isEditor) {
+        next();
+    } else {
+        res.status(401);
+        throw new Error("Not authorized as an editor!");
+    }
+};
+
+export { protect, admin, editor };

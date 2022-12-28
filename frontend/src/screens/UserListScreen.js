@@ -4,7 +4,7 @@ import { Table, Button } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import Message from "../components/Message";
 import Loader from "../components/Loader";
-import { listUsers, deleteUser } from "../actions/userActions";
+import { listUsers, deleteUser, disableUser } from "../actions/userActions";
 import { useNavigate } from "react-router-dom";
 
 const UserListScreen = () => {
@@ -14,11 +14,17 @@ const UserListScreen = () => {
     const userList = useSelector((state) => state.userList);
     const { loading, error, users } = userList;
 
+    const userDetails = useSelector((state) => state.userDetails);
+    const { user } = userDetails;
+
     const userLogin = useSelector((state) => state.userLogin);
     const { userInfo } = userLogin;
 
     const userDelete = useSelector((state) => state.userDelete);
     const { success: successDelete } = userDelete;
+
+    const userDisable = useSelector((state) => state.userDisable);
+    const { success: successDisabled } = userDisable;
 
     useEffect(() => {
         if (userInfo && userInfo.isAdmin) {
@@ -26,7 +32,20 @@ const UserListScreen = () => {
         } else {
             navigate("/login");
         }
-    }, [dispatch, navigate, successDelete, userInfo]);
+
+        if (successDisabled) {
+            dispatch(listUsers());
+        }
+    }, [dispatch, navigate, successDelete, successDisabled, userInfo, user]);
+
+    const disableHandler = (id) => {
+        // console.log("USER ID: " + id);
+
+        const now = Date.now();
+        if (window.confirm("Are you sure?")) {
+            dispatch(disableUser(id, true, now));
+        }
+    };
 
     const deleteHandler = (id) => {
         if (window.confirm("Are you sure")) {
@@ -49,6 +68,8 @@ const UserListScreen = () => {
                             <th>NAME</th>
                             <th>EMAIL</th>
                             <th>ADMIN</th>
+                            <th>EDITOR</th>
+                            <th>DISABLED</th>
                             <th>
                                 <i className={"fa-solid fa-gear"}></i>
                             </th>
@@ -78,6 +99,32 @@ const UserListScreen = () => {
                                     )}
                                 </td>
                                 <td>
+                                    {user.isEditor ? (
+                                        <i
+                                            className="fa-solid fa-check"
+                                            style={{ color: "green" }}
+                                        ></i>
+                                    ) : (
+                                        <i
+                                            className="fa-solid fa-times"
+                                            style={{ color: "red" }}
+                                        ></i>
+                                    )}
+                                </td>
+                                <td>
+                                    {user.isDisabled ? (
+                                        <i
+                                            className="fa-solid fa-check"
+                                            style={{ color: "green" }}
+                                        ></i>
+                                    ) : (
+                                        <i
+                                            className="fa-solid fa-times"
+                                            style={{ color: "red" }}
+                                        ></i>
+                                    )}
+                                </td>
+                                <td>
                                     <LinkContainer
                                         to={`/admin/user/${user._id}/edit`}
                                     >
@@ -89,11 +136,20 @@ const UserListScreen = () => {
                                         </Button>
                                     </LinkContainer>
                                     <Button
+                                        variant={"danger"}
+                                        className={"btn-sm"}
+                                        onClick={() => disableHandler(user._id)}
+                                    >
+                                        <i className="fa-solid fa-trash"></i>{" "}
+                                        Disable
+                                    </Button>
+                                    <Button
                                         variant="danger"
                                         className="btn-sm"
                                         onClick={() => deleteHandler(user._id)}
                                     >
-                                        <i className="fa-solid fa-trash"></i>
+                                        <i className="fa-solid fa-trash"></i>{" "}
+                                        Delete
                                     </Button>
                                 </td>
                             </tr>

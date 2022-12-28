@@ -15,6 +15,9 @@ const UserEditScreen = () => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isEditor, setIsEditor] = useState(false);
+    const [isDisabled, setIsDisabled] = useState(false);
+    const [disabledAt, setDisabledAt] = useState("");
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -40,13 +43,25 @@ const UserEditScreen = () => {
                 setName(user.name);
                 setEmail(user.email);
                 setIsAdmin(user.isAdmin);
+                setIsEditor(user.isEditor);
+                setIsDisabled(user.isDisabled);
             }
         }
     }, [dispatch, navigate, userId, user, successUpdate]);
 
     const submitHandler = (e) => {
         e.preventDefault();
-        dispatch(updateUser({ _id: userId, name, email, isAdmin }));
+        dispatch(
+            updateUser({
+                _id: userId,
+                name,
+                email,
+                isAdmin,
+                isEditor,
+                isDisabled,
+                disabledAt,
+            })
+        );
     };
 
     return (
@@ -92,6 +107,27 @@ const UserEditScreen = () => {
                                 label="Is Admin"
                                 checked={isAdmin}
                                 onChange={(e) => setIsAdmin(e.target.checked)}
+                            ></Form.Check>
+                        </Form.Group>
+                        <Form.Group controlId={"iseditor"}>
+                            <Form.Check
+                                type={"checkbox"}
+                                label={"Is Editor"}
+                                checked={isEditor}
+                                onChange={(event) =>
+                                    setIsEditor(event.target.checked)
+                                }
+                            ></Form.Check>
+                        </Form.Group>
+                        <Form.Group controlId={"isdisabled"}>
+                            <Form.Check
+                                type={"checkbox"}
+                                label={"Disable"}
+                                checked={isDisabled}
+                                onChange={(event) => {
+                                    setIsDisabled(event.target.checked);
+                                    setDisabledAt(Date());
+                                }}
                             ></Form.Check>
                         </Form.Group>
 

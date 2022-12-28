@@ -60,10 +60,12 @@ const App = () => {
                         <Route path="/cart/" element={<CartScreen />}>
                             <Route path=":id" element={<CartScreen />} />
                         </Route>
-                        <Route
-                            path="/admin/userlist"
-                            element={<UserListScreen />}
-                        />
+                        <Route path="/admin/" element={<UserListScreen />}>
+                            <Route
+                                path={"userlist"}
+                                element={<UserListScreen />}
+                            />
+                        </Route>
                         <Route
                             path="/admin/user/:id/edit"
                             element={<UserEditScreen />}
@@ -77,9 +79,33 @@ const App = () => {
                             element={<ProductListScreen />}
                         />
                         <Route
-                            path="/admin/product/:id/edit"
+                            path="/admin/product/"
                             element={<ProductEditScreen />}
-                        />
+                        >
+                            <Route
+                                path={":id/edit"}
+                                element={<ProductEditScreen />}
+                            />
+                        </Route>
+
+                        {/*<Route*/}
+                        {/*    path="/editor/productlist"*/}
+                        {/*    element={<ProductListScreen />}*/}
+                        {/*/>*/}
+                        {/*<Route*/}
+                        {/*    path="/editor/productlist/:pageNumber"*/}
+                        {/*    element={<ProductListScreen />}*/}
+                        {/*/>*/}
+                        {/*<Route*/}
+                        {/*    path="/editor/product/"*/}
+                        {/*    element={<ProductEditScreen />}*/}
+                        {/*>*/}
+                        {/*    <Route*/}
+                        {/*        path={":id/edit"}*/}
+                        {/*        element={<ProductEditScreen />}*/}
+                        {/*    />*/}
+                        {/*</Route>*/}
+
                         <Route
                             path="/admin/orderlist"
                             element={<OrderListScreen />}
