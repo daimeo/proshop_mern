@@ -10,6 +10,8 @@ import productRoutes from "./routes/productRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
+import cookieParser from "cookie-parser";
+import cors from "cors";
 
 dotenv.config();
 
@@ -21,7 +23,15 @@ if (process.env.NODE_ENV === "development") {
     app.use(morgan("dev"));
 }
 
-app.use(express.json());
+app.use(express.json()); // for parsing application/json
+app.use(cookieParser()); //cookie-parser dùng để đọc cookies của request
+
+app.use(
+    cors({
+        origin: "http://127.0.0.1:5000", //Chan tat ca cac domain khac ngoai domain nay
+        credentials: true, //Để bật cookie HTTP qua CORS
+    })
+);
 
 app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes);

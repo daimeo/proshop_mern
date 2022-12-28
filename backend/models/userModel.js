@@ -34,6 +34,14 @@ const userSchema = mongoose.Schema(
         disabledAt: {
             type: Date,
         },
+        isLogout: {
+            type: Boolean,
+            required: false,
+            default: false,
+        },
+        logoutAt: {
+            type: Date,
+        },
     },
     {
         timestamps: true,

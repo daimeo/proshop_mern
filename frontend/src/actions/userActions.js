@@ -30,6 +30,41 @@ import {
 } from "../constants/userConstants";
 import { ORDER_LIST_MY_RESET } from "../constants/orderConstants";
 
+// export const login = (email, password) => async (dispatch) => {
+//     try {
+//         dispatch({
+//             type: USER_LOGIN_REQUEST,
+//         });
+//
+//         const config = {
+//             headers: {
+//                 "Content-Type": "application/json; charset=UTF-8",
+//             },
+//         };
+//
+//         const { data } = await axios.post(
+//             "/api/users/login",
+//             { email, password },
+//             config
+//         );
+//
+//         dispatch({
+//             type: USER_LOGIN_SUCCESS,
+//             payload: data,
+//         });
+//
+//         localStorage.setItem("userInfo", JSON.stringify(data));
+//     } catch (error) {
+//         dispatch({
+//             type: USER_LOGIN_FAIL,
+//             payload:
+//                 error.response && error.response.data.message
+//                     ? error.response.data.message
+//                     : error.message,
+//         });
+//     }
+// };
+
 export const login = (email, password) => async (dispatch) => {
     try {
         dispatch({
@@ -64,6 +99,36 @@ export const login = (email, password) => async (dispatch) => {
         });
     }
 };
+
+export const logoutUser =
+    (id, isLogout, logoutAt) => async (dispatch, getState) => {
+        try {
+            const {
+                userLogin: { userInfo },
+            } = getState();
+
+            const config = {
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8",
+                    Authorization: `Bearer ${userInfo.token}`,
+                },
+            };
+
+            const { data } = await axios.put(
+                "/api/users/logout",
+                { id, isLogout, logoutAt },
+                config
+            );
+
+            dispatch({ type: USER_LOGOUT, payload: data });
+        } catch (e) {
+            const message =
+                e.response && e.response.data.message
+                    ? e.response.data.message
+                    : e.message;
+            console.log("LOGOUT MESSAGE: " + JSON.stringify(message));
+        }
+    };
 
 export const logout = () => (dispatch) => {
     localStorage.removeItem("userInfo");

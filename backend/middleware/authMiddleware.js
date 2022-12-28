@@ -7,17 +7,49 @@ import User from "../models/userModel.js";
 //     "cc7e0d44fd473002f1c42167459001140ec6389b7353f8088f4d9a95f2f596f2"
 // );
 
+// const protect = asyncHandler(async (req, res, next) => {
+//     let token;
+//
+//     if (
+//         req.headers.authorization &&
+//         req.headers.authorization.startsWith("Bearer")
+//     ) {
+//         try {
+//             token = req.headers.authorization.split(" ")[1];
+//
+//             // console.log("TOKEN: " + token);
+//
+//             const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+//                 algorithms: ["HS512"],
+//             });
+//
+//             console.log("DECODED: " + JSON.stringify(decoded));
+//
+//             req.user = await User.findById(decoded.id).select("-password");
+//
+//             next();
+//         } catch (error) {
+//             console.error(error);
+//             res.status(401);
+//             throw new Error("Not authorized, token failed");
+//         }
+//     }
+//
+//     if (!token) {
+//         res.status(401);
+//         throw new Error("Not authorized, no token");
+//     }
+// });
+
+// COOKIES
 const protect = asyncHandler(async (req, res, next) => {
     let token;
 
-    if (
-        req.headers.authorization &&
-        req.headers.authorization.startsWith("Bearer")
-    ) {
+    if (req.cookies.access_token) {
         try {
-            token = req.headers.authorization.split(" ")[1];
+            token = req.cookies.access_token;
 
-            // console.log("TOKEN: " + token);
+            console.log("COOKIES TOKEN: " + token);
 
             const decoded = jwt.verify(token, process.env.JWT_SECRET, {
                 algorithms: ["HS512"],

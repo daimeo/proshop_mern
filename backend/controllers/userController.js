@@ -5,22 +5,81 @@ import User from "../models/userModel.js";
 // @desc    Auth user & get token
 // @route   POST /api/users/login
 // @access  Public
-const authUser = asyncHandler(async (req, res) => {
+// const authUser = asyncHandler(async (req, res) => {
+//     const { email, password } = req.body;
+//
+//     const user = await User.findOne({ email });
+//
+//     console.log("USER ID: " + JSON.stringify(user._id));
+//
+//     if (user && !user.isDisabled && (await user.matchPassword(password))) {
+//         user.isLogout = false;
+//
+//         const updatedUser = await user.save();
+//
+//         res.json({
+//             _id: updatedUser._id,
+//             name: updatedUser.name,
+//             email: updatedUser.email,
+//             isAdmin: updatedUser.isAdmin,
+//             isEditor: updatedUser.isEditor,
+//             isDisabled: updatedUser.isDisabled,
+//             isLogout: updatedUser.isLogout,
+//             token: await generateToken(updatedUser._id),
+//         });
+//     } else if (
+//         user &&
+//         user.isDisabled &&
+//         (await user.matchPassword(password))
+//     ) {
+//         res.status(401);
+//         throw new Error("Your account is disabled!");
+//     } else {
+//         res.status(401);
+//         throw new Error("Invalid email or password");
+//     }
+// });
+
+// @desc    Auth user & get token
+// @route   POST /api/users/login
+// @access  Public
+const authUserCookie = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
 
     console.log("USER ID: " + JSON.stringify(user._id));
 
+    console.log("CONTROLLER EMAIL: " + email);
+    console.log("CONTROLLER PASS: " + password);
+
     if (user && !user.isDisabled && (await user.matchPassword(password))) {
-        res.json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            isAdmin: user.isAdmin,
-            isEditor: user.isEditor,
-            isDisabled: user.isDisabled,
-            token: await generateToken(user._id),
+        user.isLogout = false;
+
+        const updatedUser = await user.save();
+
+        const token = await generateToken(updatedUser._id);
+
+        console.log("CONTROLLER TOKEN: " + token);
+
+        // Read more at https://expressjs.com/en/api.html #res.cookie
+        res.cookie("access_token", token, {
+            // expires: new Date(Date.now() + expiration), // time until expiration
+            // maxAge: 365 * 24 * 60 * 60 * 100, // expires or maxAge, pick only ONE
+            secure: false, // set to true if you're using https
+            httpOnly: true,
+            sameSite: "strict", // Prevent cookies to be sent on a cross-site request
+        });
+
+        res.status(200).json({
+            _id: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            isAdmin: updatedUser.isAdmin,
+            isEditor: updatedUser.isEditor,
+            isDisabled: updatedUser.isDisabled,
+            isLogout: updatedUser.isLogout,
+            // token: await generateToken(updatedUser._id),
         });
     } else if (
         user &&
@@ -75,7 +134,7 @@ const registerUser = asyncHandler(async (req, res) => {
 const getUserProfile = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id);
 
-    if (user) {
+    if (user && !user.isLogout) {
         res.json({
             _id: user._id,
             name: user.name,
@@ -215,31 +274,49 @@ const disableUser = asyncHandler(async (req, res) => {
     }
 });
 
+// TODO: Read this https://blog.logrocket.com/jwt-authentication-best-practices/#how-to-expire-a-single-token
+// TODO: Use HTTPOnly flag to store JWT
+// TODO: Use Secure flag for JWT when run over HTTPS
+// TODO: Store JWT in localStorage but set low exp time(10') and use websocket to check user still connect and logged in and refresh token
+// TODO: React redux toolkit websocket Context-based: https://www.pluralsight.com/guides/using-web-sockets-in-your-reactredux-app
+// TODO: Check if browser close or tab close to dispatch logout
 // @desc    Logout user
 // @route   PUT /api/users/logout
 // @access  Private
 const logoutUser = asyncHandler(async (req, res) => {
-    const { id } = req.body;
+    const { id, isLogout, logoutAt } = req.body;
 
     console.log("ID: " + JSON.stringify(id));
 
     const user = await User.findById(id);
 
     console.log("USER ID: " + JSON.stringify(user._id));
+    console.log("USER REQ ID: " + JSON.stringify(id));
 
-    if (user && !user.isDisabled) {
-        res.json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            isAdmin: user.isAdmin,
-            isEditor: user.isEditor,
-            isDisabled: user.isDisabled,
-            token: await generateToken(user._id, 5),
+    if (user && !user.isDisabled && !user.isLogout) {
+        user.isLogout = isLogout;
+        user.logoutAt = logoutAt;
+
+        const updatedUser = await user.save();
+
+        // clear cookie token
+        res.status(200).clearCookie("access_token");
+
+        // req.session.destroy(function (err) {
+        //     res.redirect("/");
+        // });
+
+        res.status(200).json({
+            _id: updatedUser._id,
+            isLogout: updatedUser.isLogout,
+            logoutAt: updatedUser.logoutAt,
         });
     } else if (user && user.isDisabled) {
         res.status(401);
         throw new Error("Your account is disabled!");
+    } else if (user && user.isLogout) {
+        res.status(401);
+        throw new Error("Your account is already logout!");
     } else {
         res.status(401);
         throw new Error("Invalid email or password");
@@ -247,7 +324,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 export {
-    authUser,
+    // authUser,
     registerUser,
     getUserProfile,
     updateUserProfile,
@@ -257,4 +334,5 @@ export {
     updateUser,
     disableUser,
     logoutUser,
+    authUserCookie,
 };

@@ -39,6 +39,8 @@ You can also install and setup Babel if you would like
 
 Create a .env file in then root and add the following
 
+Open terminal and run `openssl rand -hex 64` to generate 512-bit secret key 
+
 ```
 NODE_ENV = development
 PORT = 5000
