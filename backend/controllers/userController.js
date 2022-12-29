@@ -63,8 +63,10 @@ const authUserCookie = asyncHandler(async (req, res) => {
         console.log("CONTROLLER TOKEN: " + token);
 
         // Read more at https://expressjs.com/en/api.html #res.cookie
+        // Note If both expires and maxAge are set in the options, then the last one defined in the object is what is used.
+        // Note The expires option should not be set directly; instead only use the maxAge option.
         res.cookie("access_token", token, {
-            // expires: new Date(Date.now() + expiration), // time until expiration
+            // expires: new Date(Date.now() + expiration), // time until expiration, use maxAge instead
             // maxAge: 365 * 24 * 60 * 60 * 100, // expires or maxAge, pick only ONE
             secure: false, // set to true if you're using https
             httpOnly: true,
