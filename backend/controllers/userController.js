@@ -74,7 +74,7 @@ const authUserCookie = asyncHandler(async (req, res) => {
         });
 
         res.status(200).json({
-            _id: updatedUser._id,
+            id: updatedUser._id,
             name: updatedUser.name,
             email: updatedUser.email,
             isAdmin: updatedUser.isAdmin,
@@ -117,7 +117,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     if (user) {
         res.status(201).json({
-            _id: user._id,
+            id: user._id,
             name: user.name,
             email: user.email,
             isAdmin: user.isAdmin,
@@ -138,7 +138,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 
     if (user && !user.isLogout) {
         res.json({
-            _id: user._id,
+            id: user._id,
             name: user.name,
             email: user.email,
             isAdmin: user.isAdmin,
@@ -167,7 +167,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
         const updatedUser = await user.save();
 
         res.json({
-            _id: updatedUser._id,
+            id: updatedUser._id,
             name: updatedUser.name,
             email: updatedUser.email,
             isAdmin: updatedUser.isAdmin,
@@ -235,7 +235,7 @@ const updateUser = asyncHandler(async (req, res) => {
         const updatedUser = await user.save();
 
         res.json({
-            _id: updatedUser._id,
+            id: updatedUser._id,
             name: updatedUser.name,
             email: updatedUser.email,
             isAdmin: updatedUser.isAdmin,
@@ -309,7 +309,7 @@ const logoutUser = asyncHandler(async (req, res) => {
         // });
 
         res.status(200).json({
-            _id: updatedUser._id,
+            id: updatedUser._id,
             isLogout: updatedUser.isLogout,
             logoutAt: updatedUser.logoutAt,
         });
