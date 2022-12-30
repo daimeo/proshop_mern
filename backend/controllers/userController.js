@@ -68,13 +68,14 @@ const authUserCookie = asyncHandler(async (req, res) => {
         res.cookie("access_token", token, {
             // expires: new Date(Date.now() + expiration), // time until expiration, use maxAge instead
             // maxAge: 365 * 24 * 60 * 60 * 100, // expires or maxAge, pick only ONE
+            // maxAge: process.env.COOKIE_EXPIRATION_TIME,
             secure: false, // set to true if you're using https
             httpOnly: true,
             sameSite: "strict", // Prevent cookies to be sent on a cross-site request
         });
 
         res.status(200).json({
-            id: updatedUser._id,
+            _id: updatedUser._id,
             name: updatedUser.name,
             email: updatedUser.email,
             isAdmin: updatedUser.isAdmin,
@@ -117,7 +118,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     if (user) {
         res.status(201).json({
-            id: user._id,
+            _id: user._id,
             name: user.name,
             email: user.email,
             isAdmin: user.isAdmin,
@@ -138,7 +139,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 
     if (user && !user.isLogout) {
         res.json({
-            id: user._id,
+            _id: user._id,
             name: user.name,
             email: user.email,
             isAdmin: user.isAdmin,
@@ -167,7 +168,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
         const updatedUser = await user.save();
 
         res.json({
-            id: updatedUser._id,
+            _id: updatedUser._id,
             name: updatedUser.name,
             email: updatedUser.email,
             isAdmin: updatedUser.isAdmin,
@@ -235,7 +236,7 @@ const updateUser = asyncHandler(async (req, res) => {
         const updatedUser = await user.save();
 
         res.json({
-            id: updatedUser._id,
+            _id: updatedUser._id,
             name: updatedUser.name,
             email: updatedUser.email,
             isAdmin: updatedUser.isAdmin,
@@ -303,13 +304,22 @@ const logoutUser = asyncHandler(async (req, res) => {
 
         // clear cookie token
         res.status(200).clearCookie("access_token");
+        // res.status(200).localStorage.clear();
+
+        // localStorage.removeItem("userInfo");
+        // localStorage.clear();
+        // res.status(200).localStorage.removeItem("userInfo");
+        // localStorage.removeItem("cartItems");
+        // localStorage.removeItem("shippingAddress");
+        // localStorage.removeItem("paymentMethod");
 
         // req.session.destroy(function (err) {
-        //     res.redirect("/");
+        //     // res.redirect("/");
+        //     console.log("LOGGED OUT");
         // });
 
         res.status(200).json({
-            id: updatedUser._id,
+            _id: updatedUser._id,
             isLogout: updatedUser.isLogout,
             logoutAt: updatedUser.logoutAt,
         });

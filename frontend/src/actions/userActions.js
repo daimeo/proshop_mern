@@ -27,8 +27,10 @@ import {
     USER_DISABLE_REQUEST,
     USER_DISABLE_SUCCESS,
     USER_DISABLE_FAIL,
+    USER_LOGOUT_SUCCESS,
 } from "../constants/userConstants";
 import { ORDER_LIST_MY_RESET } from "../constants/orderConstants";
+import Cookies from "js-cookie";
 
 // export const login = (email, password) => async (dispatch) => {
 //     try {
@@ -115,7 +117,7 @@ export const logoutUser = () => async (dispatch, getState) => {
         const config = {
             headers: {
                 "Content-Type": "application/json; charset=utf-8",
-                Authorization: `Bearer ${userInfo.token}`,
+                // Authorization: `Bearer ${userInfo.token}`,
             },
         };
 
@@ -125,18 +127,21 @@ export const logoutUser = () => async (dispatch, getState) => {
             config
         );
 
-        dispatch({ type: USER_LOGOUT, payload: data });
+        console.log("AFTER AXIOS CALLED");
 
         localStorage.removeItem("userInfo");
         localStorage.removeItem("cartItems");
         localStorage.removeItem("shippingAddress");
         localStorage.removeItem("paymentMethod");
 
+        dispatch({ type: USER_LOGOUT_SUCCESS, payload: data });
+
+        // dispatch({ type: USER_LOGOUT, payload: data });
         dispatch({ type: USER_DETAILS_RESET });
         dispatch({ type: ORDER_LIST_MY_RESET });
         dispatch({ type: USER_LIST_RESET });
 
-        document.location.href = "/login";
+        document.location.href = "/";
     } catch (e) {
         const message =
             e.response && e.response.data.message
@@ -147,6 +152,7 @@ export const logoutUser = () => async (dispatch, getState) => {
 };
 
 export const logout = () => (dispatch) => {
+    Cookies.remove("access_token");
     localStorage.removeItem("userInfo");
     localStorage.removeItem("cartItems");
     localStorage.removeItem("shippingAddress");

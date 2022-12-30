@@ -6,9 +6,9 @@ import Message from "../components/Message";
 import Loader from "../components/Loader";
 import Paginate from "../components/Paginate";
 import {
-    listProducts,
     deleteProduct,
     createProduct,
+    listProductsAdmin,
 } from "../actions/productActions";
 import { PRODUCT_CREATE_RESET } from "../constants/productConstants";
 import { useNavigate, useParams } from "react-router-dom";
@@ -59,7 +59,7 @@ const ProductListScreen = () => {
             //     navigate(`/editor/product/${createdProduct._id}/edit`);
             // }
         } else {
-            dispatch(listProducts("", pageNumber));
+            dispatch(listProductsAdmin("", pageNumber));
         }
     }, [
         dispatch,

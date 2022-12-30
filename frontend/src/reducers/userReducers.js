@@ -28,6 +28,9 @@ import {
     USER_DISABLE_FAIL,
     USER_DISABLE_SUCCESS,
     USER_DISABLE_REQUEST,
+    USER_LOGOUT_SUCCESS,
+    USER_LOGOUT_FAIL,
+    USER_LOGOUT_REQUEST,
 } from "../constants/userConstants";
 
 export const userLoginReducer = (state = {}, action) => {
@@ -142,6 +145,19 @@ export const userDisableReducer = (state = { user: {} }, action) => {
         case USER_DISABLE_SUCCESS:
             return { loading: false, success: true };
         case USER_DISABLE_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userLogoutReducer = (state = { user: {} }, action) => {
+    switch (action.type) {
+        case USER_LOGOUT_REQUEST:
+            return { loading: true };
+        case USER_LOGOUT_SUCCESS:
+            return { loading: false, success: true, userInfo: action.payload };
+        case USER_LOGOUT_FAIL:
             return { loading: false, error: action.payload };
         default:
             return state;

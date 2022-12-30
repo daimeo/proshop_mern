@@ -20,6 +20,7 @@ import {
     userDeleteReducer,
     userUpdateReducer,
     userDisableReducer,
+    // userLogoutReducer,
 } from "./reducers/userReducers";
 import {
     orderCreateReducer,
@@ -57,6 +58,7 @@ const reducer = combineReducers({
     orderList: orderListReducer,
     orderCancel: orderCancelReducer,
     orderDelete: orderDeleteReducer,
+    // userLogout: userLogoutReducer,
 });
 
 const cartItemsFromStorage = localStorage.getItem("cartItems")
