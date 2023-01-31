@@ -89,7 +89,11 @@ const ProductScreen = () => {
                     <Row>
                         <Col md={6}>
                             <Image
-                                src={product.image}
+                                src={
+                                    product.image
+                                        ? product.image
+                                        : product.image_base64
+                                }
                                 alt={product.name}
                                 fluid
                             />

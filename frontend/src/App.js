@@ -33,8 +33,6 @@ const App = () => {
                             path="/placeorder"
                             element={<PlaceOrderScreen />}
                         />
-                        <Route path="/login" element={<LoginScreen />} />
-                        <Route path="/register" element={<RegisterScreen />} />
                         <Route
                             path="/profile"
                             element={<ProfileScreen />}
@@ -122,6 +120,8 @@ const App = () => {
                             path="/search/:keyword/page/:pageNumber"
                             element={<HomeScreen />}
                         />
+                        <Route path="/login" element={<LoginScreen />} />
+                        <Route path="/register" element={<RegisterScreen />} />
                         <Route path="/" element={<HomeScreen />} />
                     </Routes>
                 </Container>

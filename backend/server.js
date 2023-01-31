@@ -23,7 +23,9 @@ if (process.env.NODE_ENV === "development") {
     app.use(morgan("dev"));
 }
 
-app.use(express.json()); // for parsing application/json
+// app.use(express.json()); // for parsing application/json
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb" }));
 app.use(cookieParser()); //cookie-parser dùng để đọc cookies của request
 
 app.use(
@@ -44,6 +46,7 @@ app.get("/api/config/paypal", (req, res) =>
 
 const __dirname = path.resolve();
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
+console.log("DIRNAME: " + __dirname);
 
 if (process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, "/frontend/build")));

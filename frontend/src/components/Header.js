@@ -33,7 +33,7 @@ const Header = () => {
                                 )}
                             />
                         </Routes>
-                        <Nav className="ms-auto">
+                        <Nav className="ms-auto ml-auto">
                             <LinkContainer to="/cart">
                                 <Nav.Link>
                                     <i className="fa fa-cart-shopping"></i> Cart

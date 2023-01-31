@@ -1,6 +1,11 @@
 import path from "path";
 import express from "express";
 import multer from "multer";
+// import fs from "fs";
+//
+// const port = process.env.APP_PORT; // 8081
+// const appUrl = process.env.APP_URL; // http://localhost
+
 const router = express.Router();
 
 const storage = multer.diskStorage({
@@ -31,6 +36,9 @@ function checkFileType(file, cb) {
 
 const upload = multer({
     storage,
+    limits: {
+        fileSize: 1024 * 1024 * 5, // 5MB
+    },
     fileFilter: function (req, file, cb) {
         checkFileType(file, cb);
     },
@@ -38,6 +46,69 @@ const upload = multer({
 
 router.post("/", upload.single("image"), (req, res) => {
     res.send(`/${req.file.path}`);
+    console.log(`/${req.file.path}`);
 });
+router.post("/multiple", upload.array("images", 5), (req, res) => {
+    res.send(`/${req.file.path}`);
+    console.log(`/${req.file.path}`);
+});
+
+// router.post("/", upload.single("image"), (req, res) => {
+//     if (req.file) {
+//         res.send("Single file uploaded successfully");
+//     } else {
+//         res.status(400).send("Please upload a valid image");
+//     }
+// });
+
+// router.post("/multiple", upload.array("images", 5), (req, res) => {
+//     if (req.files) {
+//         res.send("Multiple files uploaded successfully");
+//     } else {
+//         res.status(400).send("Please upload a valid images");
+//     }
+// });
+
+// const uploadBase64Image = async (req, res, next) => {
+//     try {
+//         const encoded = req.body.image;
+//         console.log("ENCODED: ", encoded);
+//
+//         const base64ToArray = encoded.split(";base64,");
+//         // const prefix = base64ToArray[0];
+//         // const extension = prefix.replace(/^data:image\//, '');
+//         const extension = "txt";
+//
+//         // if (extension === 'jpeg' || extension === 'jpg' || extension === 'png')
+//         // {
+//         const imageData = base64ToArray[1];
+//         const fileName = ((new Date().getTime() / 1000) | 0) + "." + extension;
+//         const __dirname = path.resolve();
+//         // console.log("DIR: " + __dirname);
+//         const imagePath = path.join(__dirname, "./../uploads/") + fileName;
+//         console.log(imagePath);
+//         fs.writeFileSync(imagePath, imageData, { encoding: "base64" });
+//
+//         return res.status(201).json({
+//             error: false,
+//             message: "Base64 Image was successfully uploaded.",
+//             url: `${appUrl}:${port}/images/${fileName}`,
+//         });
+//         // }
+//         // else {
+//         //     return res.status(403).json({
+//         //         error: true,
+//         //         message: "Base64 data not valid!",
+//         //     });
+//         // }
+//     } catch (e) {
+//         return res.status(403).json({
+//             error: true,
+//             message: e.message,
+//         });
+//     }
+// };
+//
+// router.post("/", upload.single("image"), uploadBase64Image);
 
 export default router;

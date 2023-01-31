@@ -80,13 +80,14 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
 // @desc    Create a product
 // @route   POST /api/products
-// @access  Private/Admin;Editor
+// @access  Private/Admin
 const createProduct = asyncHandler(async (req, res) => {
     const product = new Product({
         name: "Sample name",
         price: 0,
         user: req.user._id,
         image: "/images/sample.jpg",
+        image_base64: "",
         brand: "Sample brand",
         category: "Sample category",
         countInStock: 0,
@@ -100,10 +101,18 @@ const createProduct = asyncHandler(async (req, res) => {
 
 // @desc    Update a product
 // @route   PUT /api/products/:id
-// @access  Private/Admin;Editor
+// @access  Private/Admin
 const updateProduct = asyncHandler(async (req, res) => {
-    const { name, price, description, image, brand, category, countInStock } =
-        req.body;
+    const {
+        name,
+        price,
+        description,
+        image,
+        image_base64,
+        brand,
+        category,
+        countInStock,
+    } = req.body;
 
     const product = await Product.findById(req.params.id);
 
@@ -112,6 +121,7 @@ const updateProduct = asyncHandler(async (req, res) => {
         product.price = price;
         product.description = description;
         product.image = image;
+        product.image_base64 = image_base64;
         product.brand = brand;
         product.category = category;
         product.countInStock = countInStock;

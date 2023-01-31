@@ -16,6 +16,7 @@
         "domhandler": "^5.0.3",
         "domutils": "^3.0.1",
         "entities": "^4.4.0",
+        "js-base64": "^3.7.4",
         "js-cookie": "^3.0.1",
         "luxon": "^3.1.1",
         "moment": "^2.29.4",

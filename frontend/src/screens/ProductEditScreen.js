@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Form, Button } from "react-bootstrap";
+import { Form, Button, Image } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import Message from "../components/Message";
 import Loader from "../components/Loader";
@@ -12,6 +12,7 @@ import { PRODUCT_UPDATE_RESET } from "../constants/productConstants";
 const ProductEditScreen = () => {
     const params = useParams();
     const productId = params.id;
+    const navigate = useNavigate();
 
     const [name, setName] = useState("");
     const [price, setPrice] = useState(0);
@@ -21,9 +22,8 @@ const ProductEditScreen = () => {
     const [countInStock, setCountInStock] = useState(0);
     const [description, setDescription] = useState("");
     const [uploading, setUploading] = useState(false);
-
+    const [image_base64, setImage_base64] = useState("");
     const dispatch = useDispatch();
-    const navigate = useNavigate();
 
     const productDetails = useSelector((state) => state.productDetails);
     const { loading, error, product } = productDetails;
@@ -41,11 +41,7 @@ const ProductEditScreen = () => {
     useEffect(() => {
         if (successUpdate) {
             dispatch({ type: PRODUCT_UPDATE_RESET });
-            // if (userInfo.isAdmin) {
             navigate("/admin/productlist");
-            // } else if (userInfo.isEditor) {
-            //     navigate("/editor/productlist");
-            // }
         } else {
             if (!product.name || product._id !== productId) {
                 dispatch(listProductDetails(productId));
@@ -61,9 +57,31 @@ const ProductEditScreen = () => {
         }
     }, [dispatch, navigate, productId, product, successUpdate, userInfo]);
 
+    const convertToBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+
+            reader.readAsDataURL(file);
+
+            reader.onload = () => {
+                console.log("called: ", reader);
+                console.log("reader.result: ", reader.result);
+                console.log("Type of reader.result: ", typeof reader.result);
+                resolve(reader.result);
+            };
+            reader.onerror = (error) => {
+                reject(error);
+            };
+        });
+    };
+
     const uploadFileHandler = async (e) => {
-        const file = e.target.files[0];
+        const file = await e.target.files[0];
+        const base64 = await convertToBase64(file);
         console.log("UPLOAD FILE: " + file);
+        console.log("BASE64: " + base64);
+        setImage_base64(base64);
+        console.log("BASE64IMG: " + image_base64);
         const formData = new FormData();
         formData.append("image", file);
 
@@ -95,6 +113,7 @@ const ProductEditScreen = () => {
                 name,
                 price,
                 image,
+                image_base64,
                 brand,
                 category,
                 description,
@@ -153,27 +172,26 @@ const ProductEditScreen = () => {
 
                         <Form.Group controlId="image">
                             <Form.Label>Image</Form.Label>
-                            {/*<Form.Control*/}
-                            {/*    type="text"*/}
-                            {/*    placeholder="Enter image url"*/}
-                            {/*    value={image}*/}
-                            {/*    onChange={(e) => setImage(e.target.value)}*/}
-                            {/*></Form.Control>*/}
-                            {/*<Form.File*/}
-                            {/*    id="image-file"*/}
-                            {/*    label="Choose File"*/}
-                            {/*    custom*/}
-                            {/*    onChange={uploadFileHandler}*/}
-                            {/*></Form.File>*/}
+                            <Form.Control
+                                type="text"
+                                placeholder="Enter image url"
+                                value={image}
+                                onChange={(e) => setImage(e.target.value)}
+                            ></Form.Control>
                             <Form.Control
                                 type="file"
+                                multiple={false}
                                 label="Choose File"
-                                onChange={async (event) => {
-                                    await uploadFileHandler(event.target.value);
-                                    // await setImage(event.target.value);
-                                }}
+                                onChange={uploadFileHandler}
                             ></Form.Control>
                             {uploading && <Loader />}
+                            {image_base64 && image_base64 !== "" && (
+                                <Image
+                                    src={image_base64}
+                                    height={"200px"}
+                                    alt={"Base64 image"}
+                                />
+                            )}
                         </Form.Group>
 
                         <Form.Group controlId="brand">
