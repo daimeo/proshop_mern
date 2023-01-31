@@ -23,6 +23,9 @@ const ProductEditScreen = () => {
     const [description, setDescription] = useState("");
     const [uploading, setUploading] = useState(false);
     const [image_base64, setImage_base64] = useState("");
+    const [selectedFile, setSelectedFile] = useState("");
+    const [errorMsg, setErrorMsg] = useState("");
+    const [isSuccess, setIsSuccess] = useState(false);
     const dispatch = useDispatch();
 
     const productDetails = useSelector((state) => state.productDetails);
@@ -75,13 +78,50 @@ const ProductEditScreen = () => {
         });
     };
 
+    const selectedFileHandler = (event) => {
+        if (event.target.files.length > 0) {
+            setSelectedFile(event.target.files[0]);
+        }
+    };
+
+    const validateFileSize = () => {
+        const minSize = 1024 * 1024; // 1MB
+        const maxSize = 1024 * 1024 * 5; // 5MB
+
+        if (!selectedFile) {
+            setErrorMsg("Please choose a file");
+            setIsSuccess(false);
+            return false;
+        }
+
+        console.log("FILE SIZE: " + selectedFile.size);
+        // const fileSizeInBytes = selectedFile.size / (1024 * 1024);
+        const fileSizeInBytes = selectedFile.size;
+
+        if (fileSizeInBytes < minSize) {
+            setErrorMsg("File size is less than minimum limit");
+            setIsSuccess(false);
+            return false;
+        }
+        if (fileSizeInBytes > maxSize) {
+            setErrorMsg("File size is greater than maximum limit");
+            setIsSuccess(false);
+            return false;
+        }
+
+        setErrorMsg("");
+        setIsSuccess(true);
+    };
+
     const uploadFileHandler = async (e) => {
         const file = await e.target.files[0];
-        const base64 = await convertToBase64(file);
-        console.log("UPLOAD FILE: " + file);
-        console.log("BASE64: " + base64);
-        setImage_base64(base64);
-        console.log("BASE64IMG: " + image_base64);
+        if (validateFileSize()) {
+            const base64 = await convertToBase64(file);
+            console.log("UPLOAD FILE: " + file);
+            console.log("BASE64: " + base64);
+            setImage_base64(base64);
+            console.log("BASE64IMG: " + image_base64);
+        }
         const formData = new FormData();
         formData.append("image", file);
 
@@ -105,8 +145,9 @@ const ProductEditScreen = () => {
         }
     };
 
-    const submitHandler = (e) => {
+    const submitHandler = async (e) => {
         e.preventDefault();
+        await uploadFileHandler(e);
         dispatch(
             updateProduct({
                 _id: productId,
@@ -182,9 +223,24 @@ const ProductEditScreen = () => {
                                 type="file"
                                 multiple={false}
                                 label="Choose File"
-                                onChange={uploadFileHandler}
+                                onChange={selectedFileHandler}
                             ></Form.Control>
                             {uploading && <Loader />}
+                            {isSuccess && (
+                                <Message variant={"success"}>
+                                    Validation successfully
+                                </Message>
+                            )}
+                            {errorMsg && (
+                                <Message variant={"danger"}>{errorMsg}</Message>
+                            )}
+                            <Button
+                                className={"btn btn-sm"}
+                                onClick={validateFileSize}
+                                variant={"primary"}
+                            >
+                                Validate
+                            </Button>
                             {image_base64 && image_base64 !== "" && (
                                 <Image
                                     src={image_base64}
