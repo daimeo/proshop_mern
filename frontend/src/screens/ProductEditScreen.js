@@ -17,15 +17,17 @@ const ProductEditScreen = () => {
     const [name, setName] = useState("");
     const [price, setPrice] = useState(0);
     const [image, setImage] = useState("");
+    // const [image_base64, setImage_base64] = useState("");
     const [brand, setBrand] = useState("");
     const [category, setCategory] = useState("");
     const [countInStock, setCountInStock] = useState(0);
     const [description, setDescription] = useState("");
     const [uploading, setUploading] = useState(false);
-    const [image_base64, setImage_base64] = useState("");
     const [selectedFile, setSelectedFile] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
-    const [isSuccess, setIsSuccess] = useState(false);
+    const [isSuccess, setIsSuccess] = useState("");
+    const [maxFileSize, setMaxFileSize] = useState("");
+    const [base64MaxFileSize, setBase64MaxFileSize] = useState("");
     const dispatch = useDispatch();
 
     const productDetails = useSelector((state) => state.productDetails);
@@ -46,12 +48,20 @@ const ProductEditScreen = () => {
             dispatch({ type: PRODUCT_UPDATE_RESET });
             navigate("/admin/productlist");
         } else {
+            // IIFE
+            (async () => {
+                const { data } = await axios.get("/api/config");
+                setMaxFileSize(data.maxFileSize);
+                setBase64MaxFileSize(data.base64MaxFileSize);
+            })();
+
             if (!product.name || product._id !== productId) {
                 dispatch(listProductDetails(productId));
             } else {
                 setName(product.name);
                 setPrice(product.price);
-                setImage(product.image);
+                product.image && setImage(product.image);
+                // product.image_base64 && setImage_base64(product.image_base64);
                 setBrand(product.brand);
                 setCategory(product.category);
                 setCountInStock(product.countInStock);
@@ -78,52 +88,93 @@ const ProductEditScreen = () => {
         });
     };
 
-    const selectedFileHandler = (event) => {
+    // const getMaxFileSize = async () => {
+    //     const { data } = await axios.get("/api/config");
+    //     setMaxFileSize(data.maxFileSize);
+    //     setBase64MaxFileSize(data.base64MaxFileSize);
+    // };
+
+    // console.log(getMaxFileSize());
+
+    // const selectedFileHandler = (event) => {
+    //     if (event.target.files.length > 0) {
+    //         setSelectedFile(event.target.files[0]);
+    //     }
+    // };
+
+    const validateFileSize = async (event) => {
+        const minSize = 0; // 1MB
+        const base64MaxSize = 1024 * 1024 * base64MaxFileSize; // 5MB
+        const maxSize = 1024 * 1024 * maxFileSize; // 10MB
+        console.log(
+            "MaxSize 10MB: " +
+                maxSize +
+                " = " +
+                1024 +
+                " * " +
+                1024 +
+                " * " +
+                maxFileSize
+        );
+        console.log(
+            "Base64MaxSize 5MB: " +
+                base64MaxSize +
+                " = " +
+                1024 +
+                " * " +
+                1024 +
+                " * " +
+                base64MaxFileSize
+        );
+
+        let file;
         if (event.target.files.length > 0) {
+            file = event.target.files[0];
             setSelectedFile(event.target.files[0]);
-        }
-    };
-
-    const validateFileSize = () => {
-        const minSize = 1024 * 1024; // 1MB
-        const maxSize = 1024 * 1024 * 5; // 5MB
-
-        if (!selectedFile) {
+        } else {
             setErrorMsg("Please choose a file");
-            setIsSuccess(false);
+            setIsSuccess("fail");
             return false;
         }
 
-        console.log("FILE SIZE: " + selectedFile.size);
-        // const fileSizeInBytes = selectedFile.size / (1024 * 1024);
-        const fileSizeInBytes = selectedFile.size;
+        console.log("FILE SIZE: " + file.size);
+        // const fileSizeInBytes = file.size / (1024 * 1024);
+        const fileSizeInBytes = file.size;
 
-        if (fileSizeInBytes < minSize) {
+        if (fileSizeInBytes <= minSize) {
             setErrorMsg("File size is less than minimum limit");
-            setIsSuccess(false);
+            setIsSuccess("fail");
             return false;
         }
         if (fileSizeInBytes > maxSize) {
             setErrorMsg("File size is greater than maximum limit");
-            setIsSuccess(false);
+            setIsSuccess("fail");
             return false;
         }
 
-        setErrorMsg("");
-        setIsSuccess(true);
-    };
-
-    const uploadFileHandler = async (e) => {
-        const file = await e.target.files[0];
-        if (validateFileSize()) {
+        if (fileSizeInBytes <= base64MaxSize) {
             const base64 = await convertToBase64(file);
             console.log("UPLOAD FILE: " + file);
-            console.log("BASE64: " + base64);
-            setImage_base64(base64);
-            console.log("BASE64IMG: " + image_base64);
+            console.log("BASE64: " + JSON.stringify(base64));
+            // await setImage_base64(base64);
+            await setImage(base64);
+            setIsSuccess("base64");
+            console.log("BASE64IMG: " + image);
         }
+
+        setErrorMsg("");
+        setIsSuccess("pass");
+    };
+
+    const uploadFileHandler = async () => {
+        // const file = await e.target.files[0];
+        // const base64 = convertToBase64(selectedFile);
+        // console.log("UPLOAD FILE: " + selectedFile);
+        // console.log("BASE64: " + base64);
+        // console.log("BASE64IMG: " + image_base64);
+        // setImage_base64("");
         const formData = new FormData();
-        formData.append("image", file);
+        formData.append("image", selectedFile);
 
         setUploading(true);
 
@@ -147,14 +198,15 @@ const ProductEditScreen = () => {
 
     const submitHandler = async (e) => {
         e.preventDefault();
-        await uploadFileHandler(e);
+        console.log("IS SUCCESS: " + isSuccess);
+        isSuccess === "pass" && (await uploadFileHandler());
         dispatch(
             updateProduct({
                 _id: productId,
                 name,
                 price,
                 image,
-                image_base64,
+                // image_base64,
                 brand,
                 category,
                 description,
@@ -223,10 +275,11 @@ const ProductEditScreen = () => {
                                 type="file"
                                 multiple={false}
                                 label="Choose File"
-                                onChange={selectedFileHandler}
+                                // onChange={selectedFileHandler}
+                                onChange={validateFileSize}
                             ></Form.Control>
                             {uploading && <Loader />}
-                            {isSuccess && (
+                            {isSuccess !== "fail" && (
                                 <Message variant={"success"}>
                                     Validation successfully
                                 </Message>
@@ -234,19 +287,22 @@ const ProductEditScreen = () => {
                             {errorMsg && (
                                 <Message variant={"danger"}>{errorMsg}</Message>
                             )}
-                            <Button
-                                className={"btn btn-sm"}
-                                onClick={validateFileSize}
-                                variant={"primary"}
-                            >
-                                Validate
-                            </Button>
-                            {image_base64 && image_base64 !== "" && (
-                                <Image
-                                    src={image_base64}
-                                    height={"200px"}
-                                    alt={"Base64 image"}
-                                />
+                            {/*<Button*/}
+                            {/*    className={"btn btn-sm"}*/}
+                            {/*    onClick={validateFileSize}*/}
+                            {/*    variant={"primary"}*/}
+                            {/*>*/}
+                            {/*    Validate*/}
+                            {/*</Button>*/}
+                            {image && isSuccess !== "fail" && (
+                                <>
+                                    <Form.Label>Image Preview</Form.Label>
+                                    <Image
+                                        src={image}
+                                        height={"200px"}
+                                        alt={"Base64 image"}
+                                    />
+                                </>
                             )}
                         </Form.Group>
 
@@ -267,7 +323,7 @@ const ProductEditScreen = () => {
                                 placeholder="Enter countInStock"
                                 value={countInStock}
                                 onChange={(e) =>
-                                    setCountInStock(e.target.value)
+                                    setCountInStock(Number(e.target.value))
                                 }
                             ></Form.Control>
                         </Form.Group>

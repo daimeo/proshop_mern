@@ -25,7 +25,7 @@ if (process.env.NODE_ENV === "development") {
 
 // app.use(express.json()); // for parsing application/json
 app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser()); //cookie-parser dùng để đọc cookies của request
 
 app.use(
@@ -42,6 +42,13 @@ app.use("/api/upload", uploadRoutes);
 
 app.get("/api/config/paypal", (req, res) =>
     res.send(process.env.PAYPAL_CLIENT_ID)
+);
+
+app.get("/api/config", (req, res) =>
+    res.send({
+        maxFileSize: process.env.MAX_FILE_SIZE,
+        base64MaxFileSize: process.env.BASE64_MAX_FILE_SIZE,
+    })
 );
 
 const __dirname = path.resolve();
