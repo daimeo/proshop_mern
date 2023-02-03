@@ -1,10 +1,13 @@
 import path from "path";
 import express from "express";
 import multer from "multer";
+import dotenv from "dotenv";
 // import fs from "fs";
 //
 // const port = process.env.APP_PORT; // 8081
 // const appUrl = process.env.APP_URL; // http://localhost
+
+dotenv.config();
 
 const router = express.Router();
 
@@ -37,7 +40,7 @@ function checkFileType(file, cb) {
 const upload = multer({
     storage,
     limits: {
-        fileSize: 1024 * 1024 * 5, // 5MB
+        fileSize: 1024 * 1024 * process.env.MAX_FILE_SIZE, // 10MB
     },
     fileFilter: function (req, file, cb) {
         checkFileType(file, cb);

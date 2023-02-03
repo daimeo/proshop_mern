@@ -8,11 +8,27 @@ import Loader from "../components/Loader";
 import FormContainer from "../components/FormContainer";
 import { listProductDetails, updateProduct } from "../actions/productActions";
 import { PRODUCT_UPDATE_RESET } from "../constants/productConstants";
+import { useForm } from "react-hook-form";
+
+// https://refine.dev/blog/how-to-multipart-file-upload-with-react-hook-form/
+// https://viblo.asia/p/react-hook-form-vs-formik-Qbq5QmwR5D8
+// https://viblo.asia/p/react-hook-form-xu-ly-form-de-dang-hon-bao-gio-het-RnB5pAdDKPG
+// https://codesandbox.io/s/y74yf?file=/src/App.js
 
 const ProductEditScreen = () => {
     const params = useParams();
     const productId = params.id;
     const navigate = useNavigate();
+
+    const {
+        register,
+        handleSubmit,
+        reset,
+        setError,
+        control,
+        formState: { errors },
+        getValues,
+    } = useForm();
 
     const [name, setName] = useState("");
     const [price, setPrice] = useState(0);
@@ -175,6 +191,8 @@ const ProductEditScreen = () => {
         // setImage_base64("");
         const formData = new FormData();
         formData.append("image", selectedFile);
+        // console.log("FILE: " + file);
+        console.log("FILE Selected: " + selectedFile);
 
         setUploading(true);
 
@@ -185,9 +203,10 @@ const ProductEditScreen = () => {
                 },
             };
 
+            // console.log("FORM DATA: " + formData);
             const { data } = await axios.post("/api/upload", formData, config);
 
-            console.log("UPLOAD DATA: " + JSON.stringify(data));
+            // console.log("UPLOAD DATA: " + JSON.stringify(data));
             setImage(data);
             setUploading(false);
         } catch (error) {
@@ -199,7 +218,7 @@ const ProductEditScreen = () => {
     const submitHandler = async (e) => {
         e.preventDefault();
         console.log("IS SUCCESS: " + isSuccess);
-        isSuccess === "pass" && (await uploadFileHandler());
+        // isSuccess === "pass" && (await uploadFileHandler());
         dispatch(
             updateProduct({
                 _id: productId,
@@ -213,6 +232,10 @@ const ProductEditScreen = () => {
                 countInStock,
             })
         );
+    };
+
+    const onError = (error) => {
+        console.log("ERROR:::", error);
     };
 
     return (
@@ -240,7 +263,17 @@ const ProductEditScreen = () => {
                 ) : error ? (
                     <Message variant="danger">{error}</Message>
                 ) : (
-                    <Form onSubmit={submitHandler}>
+                    <Form
+                        onSubmit={
+                            isSuccess === "pass"
+                                ? uploadFileHandler &&
+                                  //   handleSubmit(submitHandler, onError)
+                                  // : handleSubmit(submitHandler, onError)
+                                  submitHandler
+                                : submitHandler
+                        }
+                        onReset={reset}
+                    >
                         <Form.Group controlId="name">
                             <Form.Label>Name</Form.Label>
                             <Form.Control
@@ -260,7 +293,7 @@ const ProductEditScreen = () => {
                                 onChange={(e) =>
                                     setPrice(Number(e.target.value))
                                 }
-                            ></Form.Control>
+                            />
                         </Form.Group>
 
                         <Form.Group controlId="image">
@@ -270,14 +303,23 @@ const ProductEditScreen = () => {
                                 placeholder="Enter image url"
                                 value={image}
                                 onChange={(e) => setImage(e.target.value)}
-                            ></Form.Control>
+                            />
                             <Form.Control
+                                as={"input"}
                                 type="file"
                                 multiple={false}
                                 label="Choose File"
                                 // onChange={selectedFileHandler}
                                 onChange={validateFileSize}
-                            ></Form.Control>
+                                //{...register("productImage", {
+                                //    required: "Please select product image",
+                                //})}
+                            />
+                            {/*{errors.productImage && (*/}
+                            {/*    <Message variant={"danger"}>*/}
+                            {/*        {errors.productImage.message}*/}
+                            {/*    </Message>*/}
+                            {/*)}*/}
                             {uploading && <Loader />}
                             {isSuccess !== "fail" && (
                                 <Message variant={"success"}>
@@ -287,22 +329,22 @@ const ProductEditScreen = () => {
                             {errorMsg && (
                                 <Message variant={"danger"}>{errorMsg}</Message>
                             )}
-                            {/*<Button*/}
-                            {/*    className={"btn btn-sm"}*/}
-                            {/*    onClick={validateFileSize}*/}
-                            {/*    variant={"primary"}*/}
-                            {/*>*/}
-                            {/*    Validate*/}
-                            {/*</Button>*/}
+                            <Button
+                                className={"btn btn-sm"}
+                                onClick={uploadFileHandler}
+                                variant={"primary"}
+                            >
+                                Upload
+                            </Button>
                             {image && isSuccess !== "fail" && (
-                                <>
+                                <div>
                                     <Form.Label>Image Preview</Form.Label>
                                     <Image
                                         src={image}
                                         height={"200px"}
                                         alt={"Base64 image"}
                                     />
-                                </>
+                                </div>
                             )}
                         </Form.Group>
 
