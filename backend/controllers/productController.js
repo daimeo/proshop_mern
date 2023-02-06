@@ -93,6 +93,7 @@ const createProduct = asyncHandler(async (req, res) => {
         countInStock: 0,
         numReviews: 0,
         description: "Sample description",
+        detail: "Sample detail",
     });
 
     const createdProduct = await product.save();
@@ -107,6 +108,7 @@ const updateProduct = asyncHandler(async (req, res) => {
         name,
         price,
         description,
+        detail,
         image,
         // image_base64,
         brand,
@@ -120,6 +122,7 @@ const updateProduct = asyncHandler(async (req, res) => {
         product.name = name;
         product.price = price;
         product.description = description;
+        product.detail = detail;
         product.image = image;
         // product.image_base64 = image_base64;
         product.brand = brand;

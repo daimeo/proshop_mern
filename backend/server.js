@@ -46,6 +46,10 @@ app.get("/api/config/paypal", (req, res) =>
 
 app.get("/api/config", (req, res) =>
     res.send({
+        url:
+            process.env.NODE_ENV === "production"
+                ? process.env.PUBLIC_URL
+                : process.env.DEV_URL,
         maxFileSize: process.env.MAX_FILE_SIZE,
         base64MaxFileSize: process.env.BASE64_MAX_FILE_SIZE,
     })

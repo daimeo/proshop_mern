@@ -12,6 +12,9 @@ node_modules/
 # production
 /frontend/build
 
+# TinyMCE
+/frontend/public/tinymce/
+
 # misc
 .DS_Store
 .env

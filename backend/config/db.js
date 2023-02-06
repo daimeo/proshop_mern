@@ -18,6 +18,19 @@ const connectDB = async () => {
         console.error(`Error: ${error.message}`.red.underline.bold);
         process.exit(1);
     }
+    // await MongoClient.connect(process.env.MONGO_URI, (err, client) => {
+    //     if (err) throw err;
+    //
+    //     const db = client.db("test");
+    //
+    //     db.collection("products")
+    //         .find()
+    //         .toArray((err, result) => {
+    //             if (err) throw err;
+    //
+    //             console.log(result);
+    //         });
+    // });
 };
 
 export default connectDB;

@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Form, Button, Image } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,27 +8,30 @@ import Loader from "../components/Loader";
 import FormContainer from "../components/FormContainer";
 import { listProductDetails, updateProduct } from "../actions/productActions";
 import { PRODUCT_UPDATE_RESET } from "../constants/productConstants";
-import { useForm } from "react-hook-form";
+// import { useForm } from "react-hook-form";
+import TinyMCE from "../components/TinyMCE";
 
 // https://refine.dev/blog/how-to-multipart-file-upload-with-react-hook-form/
 // https://viblo.asia/p/react-hook-form-vs-formik-Qbq5QmwR5D8
 // https://viblo.asia/p/react-hook-form-xu-ly-form-de-dang-hon-bao-gio-het-RnB5pAdDKPG
 // https://codesandbox.io/s/y74yf?file=/src/App.js
+// Upload file to firebase with react-hook-form https://www.newline.co/@satansdeer/handling-file-fields-using-react-hook-form--93ebef46
+// TODO: Upload image: Open Modal with file-picker, drag-drop file upload, image name/title, width-height, description(alt)
 
 const ProductEditScreen = () => {
     const params = useParams();
     const productId = params.id;
     const navigate = useNavigate();
 
-    const {
-        register,
-        handleSubmit,
-        reset,
-        setError,
-        control,
-        formState: { errors },
-        getValues,
-    } = useForm();
+    // const {
+    //     register,
+    //     handleSubmit,
+    //     reset,
+    //     setError,
+    //     control,
+    //     formState: { errors },
+    //     getValues,
+    // } = useForm();
 
     const [name, setName] = useState("");
     const [price, setPrice] = useState(0);
@@ -38,12 +41,15 @@ const ProductEditScreen = () => {
     const [category, setCategory] = useState("");
     const [countInStock, setCountInStock] = useState(0);
     const [description, setDescription] = useState("");
+    const [detail, setDetail] = useState("");
     const [uploading, setUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
     const [isSuccess, setIsSuccess] = useState("");
     const [maxFileSize, setMaxFileSize] = useState("");
     const [base64MaxFileSize, setBase64MaxFileSize] = useState("");
+    const [url, setURL] = useState("");
+    const [editorResult, setEditorResult] = useState("");
     const dispatch = useDispatch();
 
     const productDetails = useSelector((state) => state.productDetails);
@@ -59,6 +65,8 @@ const ProductEditScreen = () => {
     const userLogin = useSelector((state) => state.userLogin);
     const { userInfo } = userLogin;
 
+    const editorRef = useRef(null);
+
     useEffect(() => {
         if (successUpdate) {
             dispatch({ type: PRODUCT_UPDATE_RESET });
@@ -67,6 +75,7 @@ const ProductEditScreen = () => {
             // IIFE
             (async () => {
                 const { data } = await axios.get("/api/config");
+                setURL(data.url);
                 setMaxFileSize(data.maxFileSize);
                 setBase64MaxFileSize(data.base64MaxFileSize);
             })();
@@ -82,9 +91,67 @@ const ProductEditScreen = () => {
                 setCategory(product.category);
                 setCountInStock(product.countInStock);
                 setDescription(product.description);
+                product.detail && setDetail(product.detail);
             }
         }
     }, [dispatch, navigate, productId, product, successUpdate, userInfo]);
+
+    const log = (e) => {
+        e.preventDefault();
+        if (editorRef.current) {
+            console.log(editorRef.current.getContent());
+            setEditorResult(editorRef.current.getContent());
+        }
+    };
+
+    const file_picker_callback = (callback, value, meta) => {
+        const input = document.createElement("input");
+        input.setAttribute("type", "file");
+        input.setAttribute("accept", "image/*");
+
+        input.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+
+            const reader = new FileReader();
+            reader.addEventListener("load", () => {
+                /*
+                  Note: Now we need to register the blob in TinyMCEs image blob
+                  registry. In the next release this part hopefully won't be
+                  necessary, as we are looking to handle it internally.
+                */
+                const id = "blobid" + new Date().getTime();
+                const blobCache =
+                    window.tinymce.activeEditor.editorUpload.blobCache;
+                const base64 = reader.result.split(",")[1];
+                const blobInfo = blobCache.create(id, file, base64);
+                blobCache.add(blobInfo);
+
+                /* call the callback and populate the Title field with the file name */
+                callback(blobInfo.blobUri(), { title: file.name });
+            });
+            reader.readAsDataURL(file);
+        });
+
+        input.click();
+
+        // Provide file and text for the link dialog
+        // if (meta.filetype === "file") {
+        //     callback("mypage.html", { text: "My text" });
+        // }
+
+        // Provide image and alt text for the image dialog
+        // if (meta.filetype === "image") {
+        //     callback("myimage.jpg", { alt: "My alt text" });
+        // }
+
+        // Provide alternative source and posted for the media dialog
+        // if (meta.filetype === "media") {
+        //     callback("movie.mp4", {
+        //         source2: "alt.ogg",
+        //         poster: "image.jpg",
+        //     });
+        // }
+    };
 
     const convertToBase64 = (file) => {
         return new Promise((resolve, reject) => {
@@ -218,25 +285,27 @@ const ProductEditScreen = () => {
     const submitHandler = async (e) => {
         e.preventDefault();
         console.log("IS SUCCESS: " + isSuccess);
+        console.log("EDITOR RESULT: " + editorResult);
         // isSuccess === "pass" && (await uploadFileHandler());
         dispatch(
             updateProduct({
                 _id: productId,
                 name,
                 price,
-                image,
-                // image_base64,
                 brand,
                 category,
-                description,
                 countInStock,
+                description,
+                detail: editorResult,
+                image,
+                // image_base64,
             })
         );
     };
 
-    const onError = (error) => {
-        console.log("ERROR:::", error);
-    };
+    // const onError = (error) => {
+    //     console.log("ERROR:::", error);
+    // };
 
     return (
         <>
@@ -272,7 +341,7 @@ const ProductEditScreen = () => {
                                   submitHandler
                                 : submitHandler
                         }
-                        onReset={reset}
+                        // onReset={reset}
                     >
                         <Form.Group controlId="name">
                             <Form.Label>Name</Form.Label>
@@ -389,6 +458,22 @@ const ProductEditScreen = () => {
                                 onChange={(e) => setDescription(e.target.value)}
                             ></Form.Control>
                         </Form.Group>
+
+                        <div>
+                            {/*TinyMCE*/}
+                            <Form.Group
+                                controlId="product-detail"
+                                className={"my-3"}
+                            >
+                                <Form.Label>Product Detail</Form.Label>
+                                <TinyMCE
+                                    url={url}
+                                    editorRef={editorRef}
+                                    log={log}
+                                    file_picker_callback={file_picker_callback}
+                                />
+                            </Form.Group>
+                        </div>
 
                         <Button type="submit" variant="primary">
                             Update

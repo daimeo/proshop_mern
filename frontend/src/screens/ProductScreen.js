@@ -191,6 +191,28 @@ const ProductScreen = () => {
                         </Col>
                     </Row>
                     <Row>
+                        <ListGroup variant={"flush"}>
+                            <ListGroup.Item className={"h4"}>
+                                Product detail:
+                            </ListGroup.Item>
+                        </ListGroup>
+                    </Row>
+                    <hr />
+                    {/*TODO: user html-to-react https://www.npmjs.com/package/html-to-react*/}
+                    <Row>
+                        <div>
+                            <ListGroup variant={"flush"}>
+                                <ListGroup.Item className={"border-0 clearfix"}>
+                                    <div
+                                        dangerouslySetInnerHTML={{
+                                            __html: product.detail,
+                                        }}
+                                    />
+                                </ListGroup.Item>
+                            </ListGroup>
+                        </div>
+                    </Row>
+                    <Row>
                         <Col md={6}>
                             <h2>Reviews</h2>
                             {product.reviews.length === 0 && (
