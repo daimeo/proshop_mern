@@ -58,6 +58,10 @@ form label {
     font-weight: bold;
 }
 
+ul.nav-tabs .nav-item {
+    margin-right: 0;
+}
+
 @media (max-width: 900px) {
     .carousel-caption h2 {
         font-size: 2.5vw;

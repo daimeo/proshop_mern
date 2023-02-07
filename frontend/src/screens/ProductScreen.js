@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { Tabs, Tab } from "react-bootstrap";
 import {
     Row,
     Col,
@@ -25,6 +26,7 @@ const ProductScreen = () => {
     const [qty, setQty] = useState(1);
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState("");
+    const [tab, setTab] = useState("general");
 
     const { id } = useParams();
     const dispatch = useDispatch();
@@ -190,28 +192,64 @@ const ProductScreen = () => {
                             </Card>
                         </Col>
                     </Row>
-                    <Row>
-                        <ListGroup variant={"flush"}>
-                            <ListGroup.Item className={"h4"}>
-                                Product detail:
-                            </ListGroup.Item>
-                        </ListGroup>
+                    <Row className={"row-cols-1"}>
+                        <Tabs
+                            id={"product-info"}
+                            defaultActiveKey={"general"}
+                            activeKey={tab}
+                            className={"mb-3"}
+                            // fill={true}
+                            // justify={true}
+                            onSelect={(t) => setTab(t)}
+                        >
+                            <Tab eventKey={"general"} title={"General"}>
+                                {product.general && (
+                                    <ListGroup variant={"flush"}>
+                                        <ListGroup.Item className={"border-0"}>
+                                            <div
+                                                dangerouslySetInnerHTML={{
+                                                    __html: product.general,
+                                                }}
+                                            />
+                                        </ListGroup.Item>
+                                    </ListGroup>
+                                )}
+                            </Tab>
+                            <Tab eventKey={"detail"} title={"Detail"}>
+                                {product.detail && (
+                                    <ListGroup variant={"flush"}>
+                                        <ListGroup.Item className={"border-0"}>
+                                            <div
+                                                dangerouslySetInnerHTML={{
+                                                    __html: product.detail,
+                                                }}
+                                            />
+                                        </ListGroup.Item>
+                                    </ListGroup>
+                                )}
+                            </Tab>
+                            <Tab
+                                eventKey={"specification"}
+                                title={"Specification"}
+                                disabled={true}
+                            ></Tab>
+                        </Tabs>
                     </Row>
-                    <hr />
+
                     {/*TODO: user html-to-react https://www.npmjs.com/package/html-to-react*/}
-                    <Row>
-                        <div>
-                            <ListGroup variant={"flush"}>
-                                <ListGroup.Item className={"border-0 clearfix"}>
-                                    <div
-                                        dangerouslySetInnerHTML={{
-                                            __html: product.detail,
-                                        }}
-                                    />
-                                </ListGroup.Item>
-                            </ListGroup>
-                        </div>
-                    </Row>
+                    {/*<Row>*/}
+                    {/*    <div>*/}
+                    {/*        <ListGroup variant={"flush"}>*/}
+                    {/*            <ListGroup.Item className={"border-0"}>*/}
+                    {/*                <div*/}
+                    {/*                    dangerouslySetInnerHTML={{*/}
+                    {/*                        __html: product.detail,*/}
+                    {/*                    }}*/}
+                    {/*                />*/}
+                    {/*            </ListGroup.Item>*/}
+                    {/*        </ListGroup>*/}
+                    {/*    </div>*/}
+                    {/*</Row>*/}
                     <Row>
                         <Col md={6}>
                             <h2>Reviews</h2>

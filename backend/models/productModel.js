@@ -47,6 +47,10 @@ const productSchema = mongoose.Schema(
             type: String,
             required: true,
         },
+        general: {
+            type: String,
+            required: false,
+        },
         detail: {
             type: String,
             required: false,

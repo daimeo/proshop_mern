@@ -41,7 +41,8 @@ const ProductEditScreen = () => {
     const [category, setCategory] = useState("");
     const [countInStock, setCountInStock] = useState(0);
     const [description, setDescription] = useState("");
-    const [detail, setDetail] = useState("");
+    // const [general, setGeneral] = useState("");
+    // const [detail, setDetail] = useState("");
     const [uploading, setUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
@@ -49,7 +50,8 @@ const ProductEditScreen = () => {
     const [maxFileSize, setMaxFileSize] = useState("");
     const [base64MaxFileSize, setBase64MaxFileSize] = useState("");
     const [url, setURL] = useState("");
-    const [editorResult, setEditorResult] = useState("");
+    const [generalResult, setGeneralResult] = useState("");
+    const [detailResult, setDetailResult] = useState("");
     const dispatch = useDispatch();
 
     const productDetails = useSelector((state) => state.productDetails);
@@ -65,7 +67,8 @@ const ProductEditScreen = () => {
     const userLogin = useSelector((state) => state.userLogin);
     const { userInfo } = userLogin;
 
-    const editorRef = useRef(null);
+    const generalRef = useRef(null);
+    const detailRef = useRef(null);
 
     useEffect(() => {
         if (successUpdate) {
@@ -80,6 +83,8 @@ const ProductEditScreen = () => {
                 setBase64MaxFileSize(data.base64MaxFileSize);
             })();
 
+            console.log("Product Detail: " + product.detail);
+
             if (!product.name || product._id !== productId) {
                 dispatch(listProductDetails(productId));
             } else {
@@ -91,16 +96,36 @@ const ProductEditScreen = () => {
                 setCategory(product.category);
                 setCountInStock(product.countInStock);
                 setDescription(product.description);
-                product.detail && setDetail(product.detail);
+                product.general && setGeneralResult(product.general);
+                product.detail && setDetailResult(product.detail);
             }
         }
     }, [dispatch, navigate, productId, product, successUpdate, userInfo]);
 
-    const log = (e) => {
+    const setEditorContent = (e) => {
         e.preventDefault();
-        if (editorRef.current) {
-            console.log(editorRef.current.getContent());
-            setEditorResult(editorRef.current.getContent());
+        if (generalRef.current) {
+            console.log("GENERAL: " + generalRef.current.getContent());
+            setGeneralResult(generalRef.current.getContent());
+        }
+        if (detailRef.current) {
+            console.log("DETAIL: " + detailRef.current.getContent());
+            setDetailResult(detailRef.current.getContent());
+        }
+    };
+
+    const setGeneralContent = (e) => {
+        e.preventDefault();
+        if (generalRef.current) {
+            console.log("GENERAL: " + generalRef.current.getContent());
+            setGeneralResult(generalRef.current.getContent());
+        }
+    };
+    const setDetailContent = (e) => {
+        e.preventDefault();
+        if (detailRef.current) {
+            console.log("DETAIL: " + detailRef.current.getContent());
+            setDetailResult(detailRef.current.getContent());
         }
     };
 
@@ -285,7 +310,7 @@ const ProductEditScreen = () => {
     const submitHandler = async (e) => {
         e.preventDefault();
         console.log("IS SUCCESS: " + isSuccess);
-        console.log("EDITOR RESULT: " + editorResult);
+        console.log("GENERAL RESULT: " + generalResult);
         // isSuccess === "pass" && (await uploadFileHandler());
         dispatch(
             updateProduct({
@@ -296,7 +321,8 @@ const ProductEditScreen = () => {
                 category,
                 countInStock,
                 description,
-                detail: editorResult,
+                general: generalResult,
+                detail: detailResult,
                 image,
                 // image_base64,
             })
@@ -422,9 +448,14 @@ const ProductEditScreen = () => {
                             <Form.Control
                                 type="text"
                                 placeholder="Enter brand"
+                                required={true}
+                                isInvalid={true}
                                 value={brand}
                                 onChange={(e) => setBrand(e.target.value)}
                             ></Form.Control>
+                            <Form.Control.Feedback type={"invalid"}>
+                                Please input Product Brand
+                            </Form.Control.Feedback>
                         </Form.Group>
 
                         <Form.Group controlId="countInStock">
@@ -462,15 +493,33 @@ const ProductEditScreen = () => {
                         <div>
                             {/*TinyMCE*/}
                             <Form.Group
+                                controlId="product-general"
+                                className={"my-3"}
+                            >
+                                <Form.Label>Product General</Form.Label>
+                                <TinyMCE
+                                    url={url}
+                                    editorRef={generalRef}
+                                    content={product.general && product.general}
+                                    log={setEditorContent}
+                                    file_picker_callback={file_picker_callback}
+                                />
+                            </Form.Group>
+                        </div>
+
+                        <div>
+                            {/*TinyMCE*/}
+                            <Form.Group
                                 controlId="product-detail"
                                 className={"my-3"}
                             >
                                 <Form.Label>Product Detail</Form.Label>
                                 <TinyMCE
                                     url={url}
-                                    editorRef={editorRef}
-                                    log={log}
+                                    editorRef={detailRef}
+                                    content={product.detail && product.detail}
                                     file_picker_callback={file_picker_callback}
+                                    log={setEditorContent}
                                 />
                             </Form.Group>
                         </div>

@@ -1,13 +1,13 @@
 import React from "react";
 import { Editor } from "@tinymce/tinymce-react";
 
-const TinyMCE = ({ url, editorRef, log, file_picker_callback }) => {
+const TinyMCE = ({ url, editorRef, content, file_picker_callback, log }) => {
     return (
         <>
             <Editor
                 tinymceScriptSrc={url + "/tinymce/tinymce.min.js"}
                 onInit={(evt, editor) => (editorRef.current = editor)}
-                initialValue="<p>This is the initial content of the editor.</p>"
+                initialValue={content}
                 init={{
                     height: 300,
                     menubar: false,
