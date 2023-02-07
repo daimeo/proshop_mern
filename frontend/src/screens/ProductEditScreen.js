@@ -10,6 +10,7 @@ import { listProductDetails, updateProduct } from "../actions/productActions";
 import { PRODUCT_UPDATE_RESET } from "../constants/productConstants";
 // import { useForm } from "react-hook-form";
 import TinyMCE from "../components/TinyMCE";
+import * as DOMPurify from "dompurify";
 
 // https://refine.dev/blog/how-to-multipart-file-upload-with-react-hook-form/
 // https://viblo.asia/p/react-hook-form-vs-formik-Qbq5QmwR5D8
@@ -83,7 +84,7 @@ const ProductEditScreen = () => {
                 setBase64MaxFileSize(data.base64MaxFileSize);
             })();
 
-            console.log("Product Detail: " + product.detail);
+            // console.log("Product Detail: " + product.detail);
 
             if (!product.name || product._id !== productId) {
                 dispatch(listProductDetails(productId));
@@ -104,30 +105,40 @@ const ProductEditScreen = () => {
 
     const setEditorContent = (e) => {
         e.preventDefault();
-        if (generalRef.current) {
-            console.log("GENERAL: " + generalRef.current.getContent());
-            setGeneralResult(generalRef.current.getContent());
+        if (generalRef.current && generalRef.current !== "") {
+            let cleanGeneral = DOMPurify.sanitize(
+                generalRef.current.getContent()
+            );
+            // console.log("GENERAL: " + generalRef.current.getContent());
+            console.log("GENERAL: " + cleanGeneral);
+            setGeneralResult(cleanGeneral);
+            // setGeneralResult(generalRef.current.getContent());
         }
-        if (detailRef.current) {
-            console.log("DETAIL: " + detailRef.current.getContent());
-            setDetailResult(detailRef.current.getContent());
+        if (detailRef.current && detailRef.current !== "") {
+            let cleanDetail = DOMPurify.sanitize(
+                detailRef.current.getContent()
+            );
+            // console.log("DETAIL: " + detailRef.current.getContent());
+            console.log("DETAIL: " + cleanDetail);
+            setDetailResult(cleanDetail);
+            // setDetailResult(detailRef.current.getContent());
         }
     };
 
-    const setGeneralContent = (e) => {
-        e.preventDefault();
-        if (generalRef.current) {
-            console.log("GENERAL: " + generalRef.current.getContent());
-            setGeneralResult(generalRef.current.getContent());
-        }
-    };
-    const setDetailContent = (e) => {
-        e.preventDefault();
-        if (detailRef.current) {
-            console.log("DETAIL: " + detailRef.current.getContent());
-            setDetailResult(detailRef.current.getContent());
-        }
-    };
+    // const setGeneralContent = (e) => {
+    //     e.preventDefault();
+    //     if (generalRef.current) {
+    //         console.log("GENERAL: " + generalRef.current.getContent());
+    //         setGeneralResult(generalRef.current.getContent());
+    //     }
+    // };
+    // const setDetailContent = (e) => {
+    //     e.preventDefault();
+    //     if (detailRef.current) {
+    //         console.log("DETAIL: " + detailRef.current.getContent());
+    //         setDetailResult(detailRef.current.getContent());
+    //     }
+    // };
 
     const file_picker_callback = (callback, value, meta) => {
         const input = document.createElement("input");

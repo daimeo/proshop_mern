@@ -20,6 +20,7 @@ import {
     createProductReview,
 } from "../actions/productActions";
 import { PRODUCT_CREATE_REVIEW_RESET } from "../constants/productConstants";
+import parse from "html-react-parser";
 // import Breadcrumbs from "../components/Breadcrumbs";
 
 const ProductScreen = () => {
@@ -206,11 +207,12 @@ const ProductScreen = () => {
                                 {product.general && (
                                     <ListGroup variant={"flush"}>
                                         <ListGroup.Item className={"border-0"}>
-                                            <div
-                                                dangerouslySetInnerHTML={{
-                                                    __html: product.general,
-                                                }}
-                                            />
+                                            {/*<div*/}
+                                            {/*    dangerouslySetInnerHTML={{*/}
+                                            {/*        __html: product.general,*/}
+                                            {/*    }}*/}
+                                            {/*/>*/}
+                                            {parse(product.general)}
                                         </ListGroup.Item>
                                     </ListGroup>
                                 )}
@@ -219,11 +221,12 @@ const ProductScreen = () => {
                                 {product.detail && (
                                     <ListGroup variant={"flush"}>
                                         <ListGroup.Item className={"border-0"}>
-                                            <div
-                                                dangerouslySetInnerHTML={{
-                                                    __html: product.detail,
-                                                }}
-                                            />
+                                            {/*<div*/}
+                                            {/*    dangerouslySetInnerHTML={{*/}
+                                            {/*        __html: product.detail,*/}
+                                            {/*    }}*/}
+                                            {/*/>*/}
+                                            {parse(product.detail)}
                                         </ListGroup.Item>
                                     </ListGroup>
                                 )}
