@@ -327,7 +327,7 @@ const ProductEditScreen = () => {
     const submitHandler = async (e) => {
         e.preventDefault();
         console.log("IS SUCCESS: " + isSuccess);
-        console.log("GENERAL RESULT: " + generalResult);
+        // console.log("GENERAL RESULT: " + generalResult);
         // isSuccess === "pass" && (await uploadFileHandler());
 
         const result = setEditorContent(e);
@@ -520,7 +520,7 @@ const ProductEditScreen = () => {
                                 <TinyMCE
                                     url={url}
                                     editorRef={generalRef}
-                                    content={product.general && product.general}
+                                    content={product.general && generalResult}
                                     file_picker_callback={file_picker_callback}
                                     // log={setEditorContent}
                                 />
@@ -537,7 +537,7 @@ const ProductEditScreen = () => {
                                 <TinyMCE
                                     url={url}
                                     editorRef={detailRef}
-                                    content={product.detail && product.detail}
+                                    content={product.detail && detailResult}
                                     file_picker_callback={file_picker_callback}
                                     // log={setEditorContent}
                                 />
