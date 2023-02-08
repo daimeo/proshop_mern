@@ -105,24 +105,24 @@ const ProductEditScreen = () => {
 
     const setEditorContent = (e) => {
         e.preventDefault();
+        let cleanGeneral, cleanDetail;
         if (generalRef.current && generalRef.current !== "") {
-            let cleanGeneral = DOMPurify.sanitize(
-                generalRef.current.getContent()
-            );
+            cleanGeneral = DOMPurify.sanitize(generalRef.current.getContent(), {
+                USE_PROFILES: { html: true },
+            });
             // console.log("GENERAL: " + generalRef.current.getContent());
             console.log("GENERAL: " + cleanGeneral);
             setGeneralResult(cleanGeneral);
             // setGeneralResult(generalRef.current.getContent());
         }
         if (detailRef.current && detailRef.current !== "") {
-            let cleanDetail = DOMPurify.sanitize(
-                detailRef.current.getContent()
-            );
+            cleanDetail = DOMPurify.sanitize(detailRef.current.getContent());
             // console.log("DETAIL: " + detailRef.current.getContent());
             console.log("DETAIL: " + cleanDetail);
             setDetailResult(cleanDetail);
             // setDetailResult(detailRef.current.getContent());
         }
+        return { cleanGeneral, cleanDetail };
     };
 
     // const setGeneralContent = (e) => {
@@ -318,11 +318,20 @@ const ProductEditScreen = () => {
         }
     };
 
+    const editorHandler = (e) => {
+        const result = setEditorContent(e);
+        console.log("EDITOR RESULT: " + JSON.stringify(result.cleanGeneral));
+        console.log("EDITOR RESULT: " + JSON.stringify(result.cleanDetail));
+    };
+
     const submitHandler = async (e) => {
         e.preventDefault();
         console.log("IS SUCCESS: " + isSuccess);
         console.log("GENERAL RESULT: " + generalResult);
         // isSuccess === "pass" && (await uploadFileHandler());
+
+        const result = setEditorContent(e);
+
         dispatch(
             updateProduct({
                 _id: productId,
@@ -332,8 +341,8 @@ const ProductEditScreen = () => {
                 category,
                 countInStock,
                 description,
-                general: generalResult,
-                detail: detailResult,
+                general: result.cleanGeneral,
+                detail: result.cleanDetail,
                 image,
                 // image_base64,
             })
@@ -512,8 +521,8 @@ const ProductEditScreen = () => {
                                     url={url}
                                     editorRef={generalRef}
                                     content={product.general && product.general}
-                                    log={setEditorContent}
                                     file_picker_callback={file_picker_callback}
+                                    // log={setEditorContent}
                                 />
                             </Form.Group>
                         </div>
@@ -530,13 +539,20 @@ const ProductEditScreen = () => {
                                     editorRef={detailRef}
                                     content={product.detail && product.detail}
                                     file_picker_callback={file_picker_callback}
-                                    log={setEditorContent}
+                                    // log={setEditorContent}
                                 />
                             </Form.Group>
                         </div>
 
                         <Button type="submit" variant="primary">
                             Update
+                        </Button>
+                        <Button
+                            type="submit"
+                            variant="primary"
+                            onClick={editorHandler}
+                        >
+                            Check Editor Content
                         </Button>
                     </Form>
                 )}

@@ -10,7 +10,8 @@ const TinyMCE = ({ url, editorRef, content, file_picker_callback, log }) => {
                 initialValue={content}
                 init={{
                     height: 300,
-                    menubar: false,
+                    menubar: true,
+                    promotion: false,
                     plugins: [
                         "advlist",
                         "autolink",
@@ -34,8 +35,8 @@ const TinyMCE = ({ url, editorRef, content, file_picker_callback, log }) => {
                         "undo redo | blocks | " +
                         "bold italic forecolor | alignleft aligncenter " +
                         "alignright alignjustify | bullist numlist outdent indent | " +
-                        "custom | insertfile | link image media | " +
-                        "removeformat | help",
+                        "link image media | " +
+                        "fullscreen preview removeformat | help",
                     content_style:
                         "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
                     image_title: true,
@@ -47,9 +48,19 @@ const TinyMCE = ({ url, editorRef, content, file_picker_callback, log }) => {
                     //         text: "Custom pick",
                     //     });
                     // },
+                    /*
+                     Default valid_elements :
+                        "+a[href|target=_blank|rel],+strong/b,+em/i,+u,+p[align],+ol,+ul,+li,+br,+img[src|alt=|width|height],+sub,+sup,+hr,",
+                     */
+                    // valid_elements:
+                    //     "+a[href|target=_blank|rel=noopener noreferrer],+strong/b,+em/i,+u,+p[align],+ol,+ul,+li,+br,+img[src|alt=|width|height],+hr,+h1,+h2,+h3,+h4,+h5,+h6",
+                    // extended_valid_elements: "*[style]",
+                    invalid_elements:
+                        "script,style,object,iframe,frame,frameset,video,audio",
+                    forced_root_block: "p",
                 }}
             />
-            <button onClick={log}>Log editor content</button>
+            {/*<button onClick={log}>Log editor content</button>*/}
         </>
     );
 };
