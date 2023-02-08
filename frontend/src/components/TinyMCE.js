@@ -10,7 +10,9 @@ const TinyMCE = ({ url, editorRef, content, file_picker_callback, log }) => {
                 initialValue={content}
                 init={{
                     height: 300,
-                    menubar: true,
+                    // skin: "oxide-dark",
+                    // icons: "Silver",
+                    menubar: true, // prevent view Source
                     promotion: false,
                     plugins: [
                         "advlist",
@@ -39,10 +41,21 @@ const TinyMCE = ({ url, editorRef, content, file_picker_callback, log }) => {
                         "fullscreen preview removeformat | help",
                     content_style:
                         "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
-                    image_title: true,
                     automatic_uploads: true,
                     file_picker_types: "image",
                     file_picker_callback: file_picker_callback,
+                    mobile: {
+                        menubar: false, // Disable menubar on mobile
+                        promotion: false,
+                    },
+                    // image_title: true,
+                    image_dimensions: true,
+                    image_class_list: [
+                        {
+                            title: "Responsive",
+                            value: "img-fluid", // Give the bootstrap class to the image uploaded by TinyMCE
+                        },
+                    ],
                     // setup: (editor) => {
                     //     editor.ui.registry.addButton("custom", {
                     //         text: "Custom pick",

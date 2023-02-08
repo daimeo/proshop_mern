@@ -458,6 +458,7 @@ const ProductEditScreen = () => {
                                         src={image}
                                         height={"200px"}
                                         alt={"Base64 image"}
+                                        className={"img-fluid"}
                                     />
                                 </div>
                             )}

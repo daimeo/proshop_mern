@@ -7,6 +7,7 @@
         "@hookform/resolvers": "^2.9.10",
         "@mongodb-js/zstd": "^1.0.0",
         "@paypal/react-paypal-js": "^7.8.2",
+        "@reduxjs/toolkit": "^1.9.2",
         "@rollup/plugin-terser": "^0.3.0",
         "@testing-library/jest-dom": "^5.16.5",
         "@testing-library/react": "^13.4.0",
