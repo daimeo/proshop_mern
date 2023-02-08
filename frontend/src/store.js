@@ -32,6 +32,7 @@ import {
     orderCancelReducer,
     orderDeleteReducer,
 } from "./reducers/orderReducers";
+// import { configureStore } from "@reduxjs/toolkit";
 
 const reducer = combineReducers({
     productList: productListReducer,
@@ -88,5 +89,11 @@ const store = createStore(
     initialState,
     composeWithDevTools(applyMiddleware(...middleware))
 );
+
+// const store = configureStore(
+//     reducer,
+//     initialState,
+//     composeWithDevTools(applyMiddleware(...middleware))
+// );
 
 export default store;
