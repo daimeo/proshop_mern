@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Card } from "react-bootstrap";
 import Rating from "./Rating";
 
+// TODO: Convert price to USD using free API like: Open Exchange Rates https://openexchangerates.org/, Exchange Rates API https://exchangeratesapi.io/
 const Product = ({ product }) => {
     return (
         <Card className="my-3 p-3 rounded">

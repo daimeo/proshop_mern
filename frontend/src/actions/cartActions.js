@@ -2,8 +2,13 @@ import axios from "axios";
 import {
     CART_ADD_ITEM,
     CART_REMOVE_ITEM,
-    CART_SAVE_SHIPPING_ADDRESS,
     CART_SAVE_PAYMENT_METHOD,
+    CART_SAVE_SHIPPING_ADDRESS_REQUEST,
+    CART_SAVE_SHIPPING_ADDRESS_SUCCESS,
+    CART_SAVE_SHIPPING_ADDRESS_FAIL,
+    CART_GET_SHIPPING_ADDRESS_REQUEST,
+    CART_GET_SHIPPING_ADDRESS_SUCCESS,
+    CART_GET_SHIPPING_ADDRESS_FAIL,
 } from "../constants/cartConstants";
 
 export const addToCart = (id, qty) => async (dispatch, getState) => {
@@ -39,13 +44,64 @@ export const removeFromCart = (id) => (dispatch, getState) => {
     );
 };
 
-export const saveShippingAddress = (data) => (dispatch) => {
-    dispatch({
-        type: CART_SAVE_SHIPPING_ADDRESS,
-        payload: data,
-    });
+export const saveShippingAddress = (address) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: CART_SAVE_SHIPPING_ADDRESS_REQUEST,
+            // payload: data,
+        });
+        console.log("ADDRESS: " + JSON.stringify(address));
 
-    localStorage.setItem("shippingAddress", JSON.stringify(data));
+        const {
+            userLogin: { userInfo },
+        } = getState();
+
+        const config = {
+            headers: {
+                "Content-Type": "application/json; charset=UTF-8",
+                Authorization: `Bearer ${userInfo.token}`,
+            },
+        };
+        const { data } = await axios.post(`/api/cart/address`, address, config);
+        console.log("DATA ADDRESS: " + JSON.stringify(data));
+
+        dispatch({
+            type: CART_SAVE_SHIPPING_ADDRESS_SUCCESS,
+            payload: data,
+        });
+
+        localStorage.setItem("shippingAddress", JSON.stringify(data));
+    } catch (error) {
+        dispatch({
+            type: CART_SAVE_SHIPPING_ADDRESS_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const getShippingAddress = (userId) => async (dispatch) => {
+    try {
+        dispatch({
+            type: CART_GET_SHIPPING_ADDRESS_REQUEST,
+        });
+
+        const { data } = await axios.get(`/api/cart/address`, userId);
+
+        dispatch({ type: CART_GET_SHIPPING_ADDRESS_SUCCESS, payload: data });
+
+        localStorage.setItem("shippingAddress", JSON.stringify(data));
+    } catch (error) {
+        dispatch({
+            type: CART_GET_SHIPPING_ADDRESS_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
 };
 
 export const savePaymentMethod = (data) => (dispatch) => {

@@ -2,6 +2,28 @@ import React from "react";
 import { Editor } from "@tinymce/tinymce-react";
 
 const TinyMCE = ({ url, editorRef, content, file_picker_callback, log }) => {
+    window.tinymce.PluginManager.add("linkScanner", (editor, url) => {
+        editor.on("SaveContent", (e) => {
+            // Check all the links in the content before saving
+            const links = e.content.match(/<a.*?href=".*?".*?>/g);
+            if (links) {
+                links.forEach((link) => {
+                    // Extract the href value from the link
+                    const href = link
+                        .match(/href=".*?"/g)[0]
+                        .replace(/href="/g, "")
+                        .replace(/"/g, "");
+
+                    // Perform the virus scan here, for example using an API call to VirusTotal
+                    // ...
+
+                    // If the link is flagged as suspicious, prevent the content from being saved
+                    // ...
+                });
+            }
+        });
+    });
+
     return (
         <>
             <Editor
@@ -32,6 +54,7 @@ const TinyMCE = ({ url, editorRef, content, file_picker_callback, log }) => {
                         "preview",
                         "help",
                         "wordcount",
+                        "linkScanner",
                     ],
                     toolbar:
                         "undo redo | blocks | " +

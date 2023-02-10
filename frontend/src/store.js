@@ -10,7 +10,11 @@ import {
     productReviewCreateReducer,
     productTopRatedReducer,
 } from "./reducers/productReducers";
-import { cartReducer } from "./reducers/cartReducers";
+import {
+    cartAddressReducer,
+    cartGetAddress,
+    cartReducer,
+} from "./reducers/cartReducers";
 import {
     userLoginReducer,
     userRegisterReducer,
@@ -43,6 +47,8 @@ const reducer = combineReducers({
     productReviewCreate: productReviewCreateReducer,
     productTopRated: productTopRatedReducer,
     cart: cartReducer,
+    cartAddress: cartAddressReducer,
+    cartGetAddress: cartGetAddress,
     userLogin: userLoginReducer,
     userRegister: userRegisterReducer,
     userDetails: userDetailsReducer,

@@ -53,6 +53,8 @@ const ProductEditScreen = () => {
     const [url, setURL] = useState("");
     const [generalResult, setGeneralResult] = useState("");
     const [detailResult, setDetailResult] = useState("");
+    const [links, setLinks] = useState("");
+
     const dispatch = useDispatch();
 
     const productDetails = useSelector((state) => state.productDetails);
@@ -139,6 +141,14 @@ const ProductEditScreen = () => {
     //         setDetailResult(detailRef.current.getContent());
     //     }
     // };
+
+    // Get user input link in TinyMCE
+    const extractLinks = (content) => {
+        const regex = /(?<=(href="))[^"]+(?=")/g;
+        const extractedLinks = content.match(regex) || [];
+
+        setLinks(extractedLinks);
+    };
 
     const file_picker_callback = (callback, value, meta) => {
         const input = document.createElement("input");
@@ -543,6 +553,14 @@ const ProductEditScreen = () => {
                                     // log={setEditorContent}
                                 />
                             </Form.Group>
+                        </div>
+                        <div>
+                            <ul>
+                                {links &&
+                                    links.map((index, link) => (
+                                        <li key={index}>{link}</li>
+                                    ))}
+                            </ul>
                         </div>
 
                         <Button type="submit" variant="primary">

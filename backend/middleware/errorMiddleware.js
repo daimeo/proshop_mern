@@ -1,5 +1,6 @@
 import createError from "http-errors";
 
+// TODO: Study ELK https://viblo.asia/p/elk-stack-3-anh-em-sieu-nhan-trong-quan-ly-logs-oOVlYLArZ8W
 const notFound = (req, res, next) => {
     // const error = new Error(`Not Found - ${req.originalUrl}`);
     // res.status(404);
