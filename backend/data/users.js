@@ -16,7 +16,7 @@ for (let i = 0; i < 5; i++) {
     const lastName = faker.name.lastName();
     users.push({
         name: lastName + " " + firstName,
-        email: faker.internet.exampleEmail(firstName, lastName),
+        email: faker.internet.exampleEmail(firstName, lastName).toLowerCase(),
         password: bcrypt.hashSync("123456", 10),
         isAdmin: false,
     });
