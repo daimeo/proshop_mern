@@ -1,23 +1,19 @@
 import bcrypt from "bcryptjs";
+import { faker } from "@faker-js/faker";
 
-const users = [
-    {
-        name: "Admin User",
-        email: "admin@example.com",
+faker.locale = "vi";
+let users = [];
+
+const firstName = faker.name.firstName();
+const lastName = faker.name.lastName();
+
+for (let i = 0; i < 5; i++) {
+    users.push({
+        name: firstName + lastName,
+        email: faker.internet.exampleEmail(firstName),
         password: bcrypt.hashSync("123456", 10),
-        isAdmin: true,
-    },
-    {
-        name: "John Doe",
-        email: "john@example.com",
-        password: bcrypt.hashSync("123456", 10),
-        isEditor: true,
-    },
-    {
-        name: "Jane Doe",
-        email: "jane@example.com",
-        password: bcrypt.hashSync("123456", 10),
-    },
-];
+        isAdmin: false,
+    });
+}
 
 export default users;

@@ -1,5 +1,5 @@
 import asyncHandler from "express-async-handler";
-import Address from "../models/addressModel.js";
+import Cart from "../models/cartModel.js";
 
 // @desc Save shipping address
 // @route POST /api/cart/address
@@ -24,7 +24,7 @@ const addShippingAddress = asyncHandler(async (req, res) => {
     console.log("USER ADDRESS: " + JSON.stringify(user));
 
     if (user) {
-        const shippingAddress = new Address({
+        const shippingAddress = new Cart({
             user: req.user._id,
             country,
             city,
@@ -53,7 +53,7 @@ const getShippingAddress = asyncHandler(async (req, res) => {
     console.log("userId Type: " + typeof userId);
 
     // findOne() will return an object, find() will return an array of objects
-    const address = await Address.findOne({
+    const address = await Cart.findOne({
         user: req.user._id,
         addressType: addressType,
     }).populate("user", "id name email");

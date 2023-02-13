@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const addressSchema = mongoose.Schema(
+const cartSchema = mongoose.Schema(
     {
         user: {
             type: mongoose.Schema.Types.ObjectId,
@@ -20,6 +20,6 @@ const addressSchema = mongoose.Schema(
     }
 );
 
-const Address = mongoose.model("Address", addressSchema);
+const Cart = mongoose.model("Cart", cartSchema);
 
-export default Address;
+export default Cart;
