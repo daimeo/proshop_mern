@@ -9,6 +9,7 @@ import {
 } from "../actions/cartActions";
 import { useNavigate } from "react-router-dom";
 
+// TODO: use react-bootstrap-typeahead for autocomplete dropdown list in the address fields
 const ShippingScreen = () => {
     const cart = useSelector((state) => state.cart);
     const { shippingAddress } = cart;
