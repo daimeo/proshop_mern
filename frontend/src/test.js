@@ -15,7 +15,7 @@
 // import { Base64 } from "js-base64";
 const { Base64 } = require("js-base64");
 
-let image = "../uploads/image-1675147033173.png";
+let image = "../uploads/Screen Shot 2020-09-29 at 5.50.52 PM.png";
 let latin = "dankogai";
 let utf8 = "小飼弾";
 let u8s = new Uint8Array([100, 97, 110, 107, 111, 103, 97, 105]);
@@ -49,3 +49,26 @@ console.log(Base64.decode("5bCP6aO85by-")); // 小飼弾
 // Base64.isValid("++"); // true: can be non URL-safe
 // Base64.isValid("--"); // true: or URL-safe
 // Base64.isValid("+-"); // false: can't mix both
+
+// the array to be sorted
+const data = ["delta", "alpha", "charlie", "bravo"];
+
+// temporary array holds objects with position and sort-value
+const mapped = data.map((v, i) => {
+    return { i, value: Base64.encode(v) };
+});
+
+// sorting the mapped array containing the reduced values
+mapped.sort((a, b) => {
+    if (a.value > b.value) {
+        return 1;
+    }
+    if (a.value < b.value) {
+        return -1;
+    }
+    return 0;
+});
+
+const result = mapped.map((v) => data[v.i]);
+
+console.log(result);

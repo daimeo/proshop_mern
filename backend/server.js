@@ -54,6 +54,8 @@ app.get("/api/config", (req, res) =>
                 : process.env.DEV_URL,
         maxFileSize: process.env.MAX_FILE_SIZE,
         base64MaxFileSize: process.env.BASE64_MAX_FILE_SIZE,
+        virusTotalURL: process.env.VIRUST_URL,
+        virusTotalAPIKey: process.env.X_APIKEY,
     })
 );
 

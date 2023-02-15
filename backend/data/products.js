@@ -13,6 +13,8 @@ for (let i = 0; i < 15; i++) {
         countInStock: Number(faker.random.numeric(2)),
         rating: 0,
         numReviews: 0,
+        general: faker.lorem.paragraphs(),
+        detail: faker.lorem.paragraphs(),
     });
 }
 
