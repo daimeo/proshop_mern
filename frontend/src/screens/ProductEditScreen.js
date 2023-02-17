@@ -60,6 +60,7 @@ const ProductEditScreen = () => {
     // const [content, setContent] = useState("");
     const [linksGeneral, setLinksGeneral] = useState([]);
     const [linksDetail, setLinksDetail] = useState([]);
+    const [scannedLinks, setScannedLinks] = useState([]);
     // VirusTotal
     const [scanIDGeneral, setScanIDGeneral] = useState({});
     const [scanIDDetail, setScanIDDetail] = useState({});
@@ -100,21 +101,31 @@ const ProductEditScreen = () => {
             navigate("/admin/productlist");
         } else {
             // IIFE
-            (async () => {
-                const { data } = await axios.get("/api/config");
-                setURL(data.url);
-                setMaxFileSize(data.maxFileSize);
-                setBase64MaxFileSize(data.base64MaxFileSize);
-                setVirusTotalURL(data.virusTotalURL);
-                setVirusTotalAPIKey(data.virusTotalAPIKey);
-            })();
+            if (
+                url === "" ||
+                maxFileSize === "" ||
+                base64MaxFileSize === "" ||
+                virusTotalURL === "" ||
+                virusTotalAPIKey === ""
+            ) {
+                (async () => {
+                    const { data } = await axios.get("/api/config");
+                    setURL(data.url);
+                    setMaxFileSize(data.maxFileSize);
+                    setBase64MaxFileSize(data.base64MaxFileSize);
+                    setVirusTotalURL(data.virusTotalURL);
+                    setVirusTotalAPIKey(data.virusTotalAPIKey);
+                })();
+            }
 
             // console.log("Product Detail: " + product.detail);
+            // console.log("STATE EDITOR GEN: " + generalResult);
 
             if (!product.name || product._id !== productId) {
                 dispatch(listProductDetails(productId));
             } else {
                 setName(product.name);
+                console.log("NAME: " + product.name);
                 setPrice(product.price);
                 product.image && setImage(product.image);
                 // product.image_base64 && setImage_base64(product.image_base64);
@@ -142,12 +153,13 @@ const ProductEditScreen = () => {
         // setLinksDetail(extractedLinks);
     };
 
-    // Use axios
-    const sendLinkToVirusTotalAPIGeneral = async (linksGeneral) => {
+    const verifyURLsGeneral = async (linksG) => {
+        // Sending URL to Virus Total API
         setIsSendingURLGeneral(true);
+        let scanID = "";
+        let scanResult = "";
+        let badLink = false;
 
-        // console.log("URL: " + virusTotalURL);
-        // console.log("API KEY: " + virusTotalAPIKey);
         const options = {
             method: "POST",
             url: virusTotalURL,
@@ -157,10 +169,10 @@ const ProductEditScreen = () => {
                 "content-type": "application/x-www-form-urlencoded",
             },
             data: new URLSearchParams({
-                url: linksGeneral.toString(),
+                // url: linksGeneral.toString(),
+                url: linksG.toString(),
             }),
         };
-        let scanID;
         await axios
             .request(options)
             .then(function (response) {
@@ -170,178 +182,217 @@ const ProductEditScreen = () => {
                 scanID = response.data.data.id.split("-")[1];
                 setScanIDGeneral(scanID);
                 setIsSendingURLGeneral(false);
+
+                // Get Report from scanID
+                setIsGettingResultGeneral(true);
+
+                const options = {
+                    method: "GET",
+                    headers: {
+                        accept: "application/json",
+                        "x-apikey": virusTotalAPIKey,
+                    },
+                };
+
+                fetch(`${virusTotalURL}/${scanID}`, options)
+                    .then((response) => response.json())
+                    .then((response) => {
+                        scanResult =
+                            response.data.attributes.last_analysis_stats;
+                        console.log(
+                            "ScanResultGeneral: " +
+                                JSON.stringify(scanResult, null, 2)
+                        );
+                        setScanResultGeneral(
+                            response.data.attributes.last_analysis_stats
+                        );
+                        setIsGettingResultGeneral(false);
+
+                        // Verify result
+                        setIsVerifyReport(true);
+                        // console.log(
+                        //     "ScanResult: " + JSON.stringify(scanResult)
+                        // );
+                        if (scanResult && scanResult.malicious > 0) {
+                            console.log("Link BAD");
+                            badLink = true;
+                            // setBadLinkGeneral(true);
+                            setIsVerifyReport(false);
+                        } else {
+                            console.log("Link OK");
+                            setIsVerifyReport(false);
+                        }
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                        setIsGettingResultGeneral(false);
+                    });
+                // console.log("scanResult: " + JSON.stringify(scanResult, null, 2));
+                return scanResult;
             })
             .catch(function (error) {
                 console.error(error);
                 setIsSendingURLGeneral(false);
             });
-        console.log("SCANID: " + scanID);
-        return scanID.toString();
+
+        return badLink;
+
+        // if (scanResultGeneral && scanResultGeneral.malicious > 0) {
+        //     console.log("Link BAD");
+        //     setBadLinkGeneral(true);
+        //     setIsVerifyReport(false);
+        // } else {
+        //     console.log("Link OK");
+        //     setIsVerifyReport(false);
+        // }
     };
 
-    // Use fetch API
-    const sendLinkToVirusTotalAPIDetail = async () => {
+    const verifyURLsDetail = async (linksD) => {
+        // Sending URL to Virus Total API
         setIsSendingURLDetail(true);
-
-        // console.log(JSON.stringify(linksGeneral.toString()));
-        // console.log(linksDetail.toString());
-        // console.log("URL: " + virusTotalURL);
-        // console.log("API KEY: " + virusTotalAPIKey);
+        let scanID = "";
+        let scanResult = {};
+        let badLink = false;
 
         const options = {
             method: "POST",
+            url: virusTotalURL,
             headers: {
                 accept: "application/json",
                 "x-apikey": virusTotalAPIKey,
                 "content-type": "application/x-www-form-urlencoded",
             },
-            body: new URLSearchParams({
-                url: linksDetail.toString(),
+            data: new URLSearchParams({
+                url: linksD.toString(),
             }),
         };
-
-        //Send link to VirusTotal API for scanning
-        await fetch(virusTotalURL, options)
-            .then((response) => response.json())
-            .then((response) => {
-                const scanID = response.data.id.split("-")[1];
-                console.log(scanID);
-                setScanIDDetail(scanID);
-                setIsSendingURLDetail(false);
-            })
-            .catch((err) => {
-                console.error(err);
-                setIsSendingURLDetail(false);
-            });
-    };
-
-    const getVirusTotalReportGeneral = async (scanIDGeneral) => {
-        console.log("scanIDGeneral: " + scanIDGeneral);
-        setIsGettingResultGeneral(true);
-
-        const options = {
-            method: "GET",
-            headers: {
-                accept: "application/json",
-                "x-apikey": virusTotalAPIKey,
-            },
-        };
-
-        let scanReport;
-
-        fetch(`${virusTotalURL}/${scanIDGeneral}`, options)
-            .then((response) => response.json())
-            .then((response) => {
-                scanReport = JSON.stringify(
-                    response.data.attributes.last_analysis_stats
-                );
+        await axios
+            .request(options)
+            .then(function (response) {
                 console.log(
-                    "ScanResultGeneral: " +
-                        // JSON.stringify(
-                        //     response.data.attributes.last_analysis_stats,
-                        //     null,
-                        //     2
-                        // )
-                        scanReport
+                    "REPORT ID: " + response.data.data.id.split("-")[1]
                 );
-                setScanResultGeneral(
-                    response.data.attributes.last_analysis_stats
-                );
-                setIsGettingResultGeneral(false);
+                scanID = response.data.data.id.split("-")[1];
+                // setScanIDDetail(scanID);
+                setIsSendingURLDetail(false);
+
+                // Get Report from scanID
+                setIsGettingResultDetail(true);
+
+                const options = {
+                    method: "GET",
+                    headers: {
+                        accept: "application/json",
+                        "x-apikey": virusTotalAPIKey,
+                    },
+                };
+
+                fetch(`${virusTotalURL}/${scanID}`, options)
+                    .then((response) => response.json())
+                    .then((response) => {
+                        scanResult =
+                            response.data.attributes.last_analysis_stats;
+                        console.log(
+                            "ScanResultDetail: " +
+                                // JSON.stringify(
+                                //     response.data.attributes.last_analysis_stats,
+                                //     null,
+                                //     2
+                                // )
+                                JSON.stringify(scanResult)
+                        );
+                        setScanResultDetail(
+                            response.data.attributes.last_analysis_stats
+                        );
+                        setIsGettingResultDetail(false);
+
+                        // Verify result
+                        setIsVerifyReport(true);
+                        console.log(
+                            "SCAN RESULT: " +
+                                JSON.stringify(scanResult.malicious)
+                        );
+                        if (scanResult && scanResult.malicious > 0) {
+                            console.log("Link BAD");
+                            badLink = true;
+                            // setBadLinkDetail(true);
+                            setIsVerifyReport(false);
+                        } else {
+                            console.log("Link OK");
+                            setIsVerifyReport(false);
+                        }
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                        setIsGettingResultDetail(false);
+                    });
+                // console.log("scanResult: " + JSON.stringify(scanResult, null, 2));
+                // return scanResult;
             })
-            .catch((err) => {
-                console.error(err);
-                setIsGettingResultGeneral(false);
+            .catch(function (error) {
+                console.error(error);
+                setIsSendingURLDetail(false);
             });
-        // console.log("scanReport: " + JSON.stringify(scanReport, null, 2));
-        return scanReport;
-    };
 
-    const getVirusTotalReportDetail = async () => {
-        setIsGettingResultDetail(true);
+        return badLink;
 
-        const options = {
-            method: "GET",
-            headers: {
-                accept: "application/json",
-                "x-apikey": virusTotalAPIKey,
-            },
-        };
+        // console.log(scanResultDetail.malicious);
+        // console.log(scanResultDetail.malicious);
+        // setIsVerifyReport(true);
 
-        // const scannedId =
-        //     "bf471dc5eb785689ab176f05edd27950aff0ddc09e3ec979bc3a358201d48f15";
-
-        fetch(`${virusTotalURL}/${scanIDDetail}`, options)
-            .then((response) => response.json())
-            .then((response) => {
-                console.log(response);
-                setScanResultDetail(
-                    response.data.attributes.last_analysis_stats
-                );
-                setIsGettingResultDetail(false);
-            })
-            .catch((err) => {
-                console.error(err);
-                setIsGettingResultDetail(false);
-            });
-    };
-
-    const verifyScanReport = () => {
-        console.log(scanResultGeneral.malicious);
-        console.log(scanResultDetail.malicious);
-        setIsVerifyReport(true);
-
-        if (scanResultGeneral && scanResultGeneral.malicious > 0) {
-            console.log("Link BAD");
-            setBadLinkGeneral(true);
-            setIsVerifyReport(false);
-        } else {
-            console.log("Link OK");
-            setIsVerifyReport(false);
-        }
-
-        if (scanResultDetail && scanResultDetail.malicious > 0) {
-            console.log("Link BAD");
-            setBadLinkDetail(true);
-            setIsVerifyReport(false);
-        } else {
-            console.log("Link OK");
-            setIsVerifyReport(false);
-        }
+        // if (scanResultDetail && scanResultDetail.malicious > 0) {
+        //     console.log("Link BAD");
+        //     setBadLinkDetail(true);
+        //     setIsVerifyReport(false);
+        // } else {
+        //     console.log("Link OK");
+        //     setIsVerifyReport(false);
+        // }
     };
 
     const editorChangeHandler = async () => {
         let cleanGeneral, cleanDetail;
+        console.log("Product general: " + product.general);
+        console.log("Product general Result: " + generalResult);
         if (generalRef.current && generalRef.current !== "") {
             cleanGeneral = await purifyContent(generalRef.current.getContent());
             const cleanG = extractLinks(cleanGeneral);
             setLinksGeneral(cleanG);
             // console.log("CLEAN GENERAL: " + cleanG.toString());
 
-            const returnLinkG = await sendLinkToVirusTotalAPIGeneral(cleanG);
-            console.log("returnLinkG: " + returnLinkG);
-            // const returnReportG = await getVirusTotalReportGeneral(returnLinkG);
-            console.log(
-                "returnReportG: " +
-                    JSON.stringify(
-                        await getVirusTotalReportGeneral(returnLinkG)
-                    )
-            );
+            if (product.general !== cleanGeneral) {
+                await verifyURLsGeneral(cleanG);
+            }
         }
+
         if (detailRef.current && detailRef.current !== "") {
             cleanDetail = await purifyContent(detailRef.current.getContent());
-            setLinksDetail(extractLinks(cleanDetail));
+            const cleanD = extractLinks(cleanDetail);
+            setLinksDetail(cleanD);
+            // console.log("CLEAN DETAIL: " + cleanD.toString());
+
+            if (product.detail !== cleanDetail) {
+                await verifyURLsDetail(cleanD);
+            }
         }
     };
 
     const setEditorContent = async (e) => {
         e.preventDefault();
         let cleanGeneral, cleanDetail;
-        if (generalRef.current && generalRef.current !== "") {
+        if (
+            generalRef.current &&
+            generalRef.current !== "" &&
+            generalRef.current !== product.general
+        ) {
             cleanGeneral = await purifyContent(generalRef.current.getContent());
             setGeneralResult(cleanGeneral);
         }
-        if (detailRef.current && detailRef.current !== "") {
+        if (
+            detailRef.current &&
+            detailRef.current !== "" &&
+            detailRef.current !== product.detail
+        ) {
             cleanDetail = await purifyContent(detailRef.current.getContent());
             setDetailResult(cleanDetail);
         }
@@ -751,21 +802,23 @@ const ProductEditScreen = () => {
                                 />
                             </Form.Group>
                         </div>
-                        <div>
+                        <div className={"mb-3"}>
                             <ul>
                                 {linksGeneral &&
                                     linksGeneral.map((link, index) => (
                                         <li key={index}>{link}</li>
                                     ))}
                             </ul>
+                            <hr />
                             <div>
-                                <Button
-                                    type={"button"}
-                                    variant={"primary"}
-                                    onClick={sendLinkToVirusTotalAPIGeneral}
-                                >
-                                    Scan Link
-                                </Button>
+                                {/*<Button*/}
+                                {/*    type={"button"}*/}
+                                {/*    variant={"primary"}*/}
+                                {/*    onClick={sendLinkToVirusTotalAPIGeneral}*/}
+                                {/*>*/}
+                                {/*    Scan Link*/}
+                                {/*</Button>*/}
+                                <h4>Scan ID</h4>
                             </div>
                             <div>
                                 {isSendingURLGeneral && !scanIDGeneral ? (
@@ -779,14 +832,16 @@ const ProductEditScreen = () => {
                                     </pre>
                                 )}
                             </div>
+                            <hr />
                             <div>
-                                <Button
-                                    type={"button"}
-                                    variant={"primary"}
-                                    onClick={getVirusTotalReportGeneral}
-                                >
-                                    Get Scan Result General
-                                </Button>
+                                {/*<Button*/}
+                                {/*    type={"button"}*/}
+                                {/*    variant={"primary"}*/}
+                                {/*    onClick={getVirusTotalReportGeneral}*/}
+                                {/*>*/}
+                                {/*    Get Scan Result General*/}
+                                {/*</Button>*/}
+                                <h4>Scan Result</h4>
                             </div>
                             <div>
                                 {isGettingResultGeneral ? (
@@ -804,13 +859,7 @@ const ProductEditScreen = () => {
                                     </pre>
                                 )}
                             </div>
-                            <Button
-                                type={"button"}
-                                variant={"primary"}
-                                onClick={verifyScanReport}
-                            >
-                                Verify Links
-                            </Button>
+                            <hr />
                             {isVerifyReport && <Loader size={"small"} />}
                             {linksGeneral && badLinkGeneral === true ? (
                                 <Message variant={"danger"}>
@@ -823,6 +872,14 @@ const ProductEditScreen = () => {
                                     You can use this link
                                 </Message>
                             )}
+                            <Button
+                                type={"button"}
+                                variant={"primary"}
+                                onClick={verifyURLsGeneral}
+                                className={"mb-3"}
+                            >
+                                Verify Links
+                            </Button>
                         </div>
 
                         <div>
@@ -849,14 +906,16 @@ const ProductEditScreen = () => {
                                         <li key={index}>{link}</li>
                                     ))}
                             </ul>
+                            <hr />
                             <div>
-                                <Button
-                                    type={"button"}
-                                    variant={"primary"}
-                                    onClick={sendLinkToVirusTotalAPIDetail}
-                                >
-                                    Scan Link
-                                </Button>
+                                {/*<Button*/}
+                                {/*    type={"button"}*/}
+                                {/*    variant={"primary"}*/}
+                                {/*    onClick={sendLinkToVirusTotalAPIDetail}*/}
+                                {/*>*/}
+                                {/*    Scan Link*/}
+                                {/*</Button>*/}
+                                <h4>Scan ID</h4>
                             </div>
                             <div>
                                 {isSendingURLDetail ? (
@@ -870,14 +929,16 @@ const ProductEditScreen = () => {
                                     </pre>
                                 )}
                             </div>
+                            <hr />
                             <div>
-                                <Button
-                                    type={"button"}
-                                    variant={"primary"}
-                                    onClick={getVirusTotalReportDetail}
-                                >
-                                    Get Scan Result Detail
-                                </Button>
+                                {/*<Button*/}
+                                {/*    type={"button"}*/}
+                                {/*    variant={"primary"}*/}
+                                {/*    onClick={getVirusTotalReportDetail}*/}
+                                {/*>*/}
+                                {/*    Get Scan Result Detail*/}
+                                {/*</Button>*/}
+                                <h4>Scan Result</h4>
                             </div>
                             <div>
                                 {isGettingResultDetail ? (
@@ -895,13 +956,6 @@ const ProductEditScreen = () => {
                                     </pre>
                                 )}
                             </div>
-                            <Button
-                                type={"button"}
-                                variant={"primary"}
-                                onClick={verifyScanReport}
-                            >
-                                Verify Links
-                            </Button>
                             {isVerifyReport && <Loader size={"small"} />}
                             {linksDetail && badLinkDetail === true ? (
                                 <Message variant={"danger"}>
@@ -914,18 +968,28 @@ const ProductEditScreen = () => {
                                     You can use this link
                                 </Message>
                             )}
+                            <Button
+                                type={"button"}
+                                variant={"primary"}
+                                onClick={verifyURLsDetail}
+                            >
+                                Verify Links
+                            </Button>
                         </div>
 
-                        <Button type="submit" variant="primary">
-                            Update
-                        </Button>
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            onClick={editorHandler}
-                        >
-                            Check Editor Content
-                        </Button>
+                        <div className={"mt-3"}>
+                            <Button type="submit" variant="primary">
+                                Update
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                onClick={editorHandler}
+                                className={"mx-1"}
+                            >
+                                Check Editor Content
+                            </Button>
+                        </div>
                     </Form>
                 )}
             </FormContainer>
