@@ -62,7 +62,7 @@ const TinyMCE = ({
                         "preview",
                         "help",
                         "wordcount",
-                        "linkScanner",
+                        // "linkScanner",
                     ],
                     toolbar:
                         "undo redo | blocks | " +
