@@ -199,10 +199,14 @@ const ProductEditScreen = () => {
                     .then((response) => {
                         scanResult =
                             response.data.attributes.last_analysis_stats;
-                        console.log(
-                            "ScanResultGeneral: " +
-                                JSON.stringify(scanResult, null, 2)
-                        );
+                        // console.log(
+                        //     "ScanResultGeneral: " +
+                        //         JSON.stringify(scanResult, null, 2)
+                        // );
+                        // console.log(
+                        //     "ScanResultGeneral LENGTH: " +
+                        //         Object.keys(scanResult).length
+                        // );
                         setScanResultGeneral(
                             response.data.attributes.last_analysis_stats
                         );
@@ -216,8 +220,10 @@ const ProductEditScreen = () => {
                         if (scanResult && scanResult.malicious > 0) {
                             console.log("Link BAD");
                             badLink = true;
-                            // setBadLinkGeneral(true);
+                            console.log("badLink: " + badLink);
+                            setBadLinkGeneral(true);
                             setIsVerifyReport(false);
+                            // return badLink;
                         } else {
                             console.log("Link OK");
                             setIsVerifyReport(false);
@@ -228,30 +234,25 @@ const ProductEditScreen = () => {
                         setIsGettingResultGeneral(false);
                     });
                 // console.log("scanResult: " + JSON.stringify(scanResult, null, 2));
-                return scanResult;
+                // return scanResult;
+                console.log("badLink Return: " + badLink);
+                // return badLink;
             })
             .catch(function (error) {
                 console.error(error);
                 setIsSendingURLGeneral(false);
             });
 
+        // TODO: Fix badLinks
+        // console.log("badLink Return: " + badLink);
         return badLink;
-
-        // if (scanResultGeneral && scanResultGeneral.malicious > 0) {
-        //     console.log("Link BAD");
-        //     setBadLinkGeneral(true);
-        //     setIsVerifyReport(false);
-        // } else {
-        //     console.log("Link OK");
-        //     setIsVerifyReport(false);
-        // }
     };
 
-    const verifyURLsDetail = async (linksD) => {
+    const verifyURLsDetail = async (linksG) => {
         // Sending URL to Virus Total API
         setIsSendingURLDetail(true);
         let scanID = "";
-        let scanResult = {};
+        let scanResult = "";
         let badLink = false;
 
         const options = {
@@ -263,7 +264,8 @@ const ProductEditScreen = () => {
                 "content-type": "application/x-www-form-urlencoded",
             },
             data: new URLSearchParams({
-                url: linksD.toString(),
+                // url: linksDetail.toString(),
+                url: linksG.toString(),
             }),
         };
         await axios
@@ -273,7 +275,7 @@ const ProductEditScreen = () => {
                     "REPORT ID: " + response.data.data.id.split("-")[1]
                 );
                 scanID = response.data.data.id.split("-")[1];
-                // setScanIDDetail(scanID);
+                setScanIDDetail(scanID);
                 setIsSendingURLDetail(false);
 
                 // Get Report from scanID
@@ -292,15 +294,14 @@ const ProductEditScreen = () => {
                     .then((response) => {
                         scanResult =
                             response.data.attributes.last_analysis_stats;
-                        console.log(
-                            "ScanResultDetail: " +
-                                // JSON.stringify(
-                                //     response.data.attributes.last_analysis_stats,
-                                //     null,
-                                //     2
-                                // )
-                                JSON.stringify(scanResult)
-                        );
+                        // console.log(
+                        //     "ScanResultDetail: " +
+                        //         JSON.stringify(scanResult, null, 2)
+                        // );
+                        // console.log(
+                        //     "ScanResultDetail LENGTH: " +
+                        //         Object.keys(scanResult).length
+                        // );
                         setScanResultDetail(
                             response.data.attributes.last_analysis_stats
                         );
@@ -308,14 +309,13 @@ const ProductEditScreen = () => {
 
                         // Verify result
                         setIsVerifyReport(true);
-                        console.log(
-                            "SCAN RESULT: " +
-                                JSON.stringify(scanResult.malicious)
-                        );
+                        // console.log(
+                        //     "ScanResult: " + JSON.stringify(scanResult)
+                        // );
                         if (scanResult && scanResult.malicious > 0) {
                             console.log("Link BAD");
                             badLink = true;
-                            // setBadLinkDetail(true);
+                            setBadLinkDetail(true);
                             setIsVerifyReport(false);
                         } else {
                             console.log("Link OK");
@@ -335,19 +335,6 @@ const ProductEditScreen = () => {
             });
 
         return badLink;
-
-        // console.log(scanResultDetail.malicious);
-        // console.log(scanResultDetail.malicious);
-        // setIsVerifyReport(true);
-
-        // if (scanResultDetail && scanResultDetail.malicious > 0) {
-        //     console.log("Link BAD");
-        //     setBadLinkDetail(true);
-        //     setIsVerifyReport(false);
-        // } else {
-        //     console.log("Link OK");
-        //     setIsVerifyReport(false);
-        // }
     };
 
     const editorChangeHandler = async () => {
@@ -357,22 +344,40 @@ const ProductEditScreen = () => {
         if (generalRef.current && generalRef.current !== "") {
             cleanGeneral = await purifyContent(generalRef.current.getContent());
             const cleanG = extractLinks(cleanGeneral);
-            setLinksGeneral(cleanG);
-            // console.log("CLEAN GENERAL: " + cleanG.toString());
+            if (Object.keys(cleanG).length > 0) {
+                setLinksGeneral(cleanG);
+                // console.log("CLEAN GENERAL: " + cleanG.toString());
+            }
 
             if (product.general !== cleanGeneral) {
                 await verifyURLsGeneral(cleanG);
+                // console.log("badLinksG: " + badLinksG);
+                // setBadLinkGeneral(badLinksG);
+            }
+
+            if (Object.keys(cleanG).length === 0) {
+                setLinksGeneral([]);
+                setScanIDGeneral({});
+                setScanResultGeneral({});
+                // setBadLinkGeneral(false);
             }
         }
 
         if (detailRef.current && detailRef.current !== "") {
             cleanDetail = await purifyContent(detailRef.current.getContent());
             const cleanD = extractLinks(cleanDetail);
-            setLinksDetail(cleanD);
-            // console.log("CLEAN DETAIL: " + cleanD.toString());
-
+            if (Object.keys(cleanD).length > 0) {
+                setLinksDetail(cleanD);
+                // console.log("CLEAN DETAIL: " + cleanD.toString());
+            }
             if (product.detail !== cleanDetail) {
                 await verifyURLsDetail(cleanD);
+            }
+            if (Object.keys(cleanD).length === 0) {
+                setLinksDetail([]);
+                setScanIDDetail({});
+                setScanResultDetail({});
+                // setBadLinkDetail(false);
             }
         }
     };
@@ -413,6 +418,24 @@ const ProductEditScreen = () => {
     //         setDetailResult(detailRef.current.getContent());
     //     }
     // };
+
+    const showLinkG = () => {
+        console.log("TYPE OF LINKs GENERAL: " + typeof linksGeneral);
+        console.log(linksGeneral);
+        console.log(linksGeneral.length);
+
+        console.log(typeof scanResultGeneral);
+        console.log(scanResultGeneral);
+    };
+
+    const showLinkD = () => {
+        console.log("TYPE OF LINKs GENERAL: " + typeof linksDetail);
+        console.log(linksDetail);
+        console.log(linksDetail.length);
+
+        console.log(typeof scanResultDetail);
+        console.log(scanResultDetail);
+    };
 
     const file_picker_callback = (callback, value, meta) => {
         const input = document.createElement("input");
@@ -805,21 +828,11 @@ const ProductEditScreen = () => {
                         <div className={"mb-3"}>
                             <ul>
                                 {linksGeneral &&
+                                    linksGeneral.length > 0 &&
                                     linksGeneral.map((link, index) => (
                                         <li key={index}>{link}</li>
                                     ))}
                             </ul>
-                            <hr />
-                            <div>
-                                {/*<Button*/}
-                                {/*    type={"button"}*/}
-                                {/*    variant={"primary"}*/}
-                                {/*    onClick={sendLinkToVirusTotalAPIGeneral}*/}
-                                {/*>*/}
-                                {/*    Scan Link*/}
-                                {/*</Button>*/}
-                                <h4>Scan ID</h4>
-                            </div>
                             <div>
                                 {isSendingURLGeneral && !scanIDGeneral ? (
                                     <>
@@ -827,21 +840,18 @@ const ProductEditScreen = () => {
                                         <Loader size={"small"} />{" "}
                                     </>
                                 ) : (
-                                    <pre>
-                                        {JSON.stringify(scanIDGeneral, null, 2)}
-                                    </pre>
+                                    scanIDGeneral &&
+                                    Object.keys(scanIDGeneral).length > 0 && (
+                                        <>
+                                            <hr />
+                                            <h4>Scan ID</h4>
+                                            <pre>
+                                                {JSON.stringify(scanIDGeneral)}
+                                            </pre>
+                                            <hr />
+                                        </>
+                                    )
                                 )}
-                            </div>
-                            <hr />
-                            <div>
-                                {/*<Button*/}
-                                {/*    type={"button"}*/}
-                                {/*    variant={"primary"}*/}
-                                {/*    onClick={getVirusTotalReportGeneral}*/}
-                                {/*>*/}
-                                {/*    Get Scan Result General*/}
-                                {/*</Button>*/}
-                                <h4>Scan Result</h4>
                             </div>
                             <div>
                                 {isGettingResultGeneral ? (
@@ -851,35 +861,58 @@ const ProductEditScreen = () => {
                                     </>
                                 ) : (
                                     <pre>
-                                        {JSON.stringify(
-                                            scanResultGeneral,
-                                            null,
-                                            2
-                                        )}
+                                        {scanResultGeneral &&
+                                            Object.keys(scanResultGeneral)
+                                                .length > 0 && (
+                                                <>
+                                                    <h4>Scan Result</h4>
+                                                    "Scanning Result is:{" "}
+                                                    {JSON.stringify(
+                                                        scanResultGeneral,
+                                                        null,
+                                                        2
+                                                    )}
+                                                    <hr />
+                                                </>
+                                            )}
                                     </pre>
                                 )}
                             </div>
-                            <hr />
                             {isVerifyReport && <Loader size={"small"} />}
-                            {linksGeneral && badLinkGeneral === true ? (
-                                <Message variant={"danger"}>
-                                    "{linksGeneral}" is malicious. Please remove
-                                    or use another link
-                                </Message>
-                            ) : (
-                                <Message variant={"info"}>
-                                    "<strong>{linksGeneral}</strong>" is safe.
-                                    You can use this link
-                                </Message>
-                            )}
+                            <>
+                                {Object.keys(scanResultGeneral).length > 0 &&
+                                    badLinkGeneral === true && (
+                                        <Message variant={"danger"}>
+                                            "{linksGeneral}" is malicious.
+                                            Please remove or use another link
+                                        </Message>
+                                    )}
+                            </>
+                            <>
+                                {Object.keys(scanResultGeneral).length > 0 &&
+                                    badLinkGeneral === false && (
+                                        <Message variant={"info"}>
+                                            "{linksGeneral}" is safe. You can
+                                            use this link
+                                        </Message>
+                                    )}
+                            </>
                             <Button
                                 type={"button"}
                                 variant={"primary"}
-                                onClick={verifyURLsGeneral}
+                                onClick={showLinkG}
                                 className={"mb-3"}
                             >
-                                Verify Links
+                                Show Links General
                             </Button>
+                            {/*<Button*/}
+                            {/*    type={"button"}*/}
+                            {/*    variant={"primary"}*/}
+                            {/*    onClick={verifyURLsGeneral}*/}
+                            {/*    className={"mb-3"}*/}
+                            {/*>*/}
+                            {/*    Verify Links*/}
+                            {/*</Button>*/}
                         </div>
 
                         <div>
@@ -899,46 +932,33 @@ const ProductEditScreen = () => {
                                 />
                             </Form.Group>
                         </div>
-                        <div>
+                        <div className={"mb-3"}>
                             <ul>
                                 {linksDetail &&
+                                    linksDetail.length > 0 &&
                                     linksDetail.map((link, index) => (
                                         <li key={index}>{link}</li>
                                     ))}
                             </ul>
-                            <hr />
                             <div>
-                                {/*<Button*/}
-                                {/*    type={"button"}*/}
-                                {/*    variant={"primary"}*/}
-                                {/*    onClick={sendLinkToVirusTotalAPIDetail}*/}
-                                {/*>*/}
-                                {/*    Scan Link*/}
-                                {/*</Button>*/}
-                                <h4>Scan ID</h4>
-                            </div>
-                            <div>
-                                {isSendingURLDetail ? (
+                                {isSendingURLDetail && !scanIDDetail ? (
                                     <>
                                         <p>Scanning...</p>{" "}
                                         <Loader size={"small"} />{" "}
                                     </>
                                 ) : (
-                                    <pre>
-                                        {JSON.stringify(scanIDDetail, null, 2)}
-                                    </pre>
+                                    scanIDDetail &&
+                                    Object.keys(scanIDDetail).length > 0 && (
+                                        <>
+                                            <hr />
+                                            <h4>Scan ID</h4>
+                                            <pre>
+                                                {JSON.stringify(scanIDDetail)}
+                                            </pre>
+                                            <hr />
+                                        </>
+                                    )
                                 )}
-                            </div>
-                            <hr />
-                            <div>
-                                {/*<Button*/}
-                                {/*    type={"button"}*/}
-                                {/*    variant={"primary"}*/}
-                                {/*    onClick={getVirusTotalReportDetail}*/}
-                                {/*>*/}
-                                {/*    Get Scan Result Detail*/}
-                                {/*</Button>*/}
-                                <h4>Scan Result</h4>
                             </div>
                             <div>
                                 {isGettingResultDetail ? (
@@ -948,33 +968,55 @@ const ProductEditScreen = () => {
                                     </>
                                 ) : (
                                     <pre>
-                                        {JSON.stringify(
-                                            scanResultDetail,
-                                            null,
-                                            2
-                                        )}
+                                        {scanResultDetail &&
+                                            Object.keys(scanResultDetail)
+                                                .length > 0 && (
+                                                <>
+                                                    <h4>Scan Result</h4>
+                                                    "Scanning Result is:{" "}
+                                                    {JSON.stringify(
+                                                        scanResultDetail,
+                                                        null,
+                                                        2
+                                                    )}
+                                                    <hr />
+                                                </>
+                                            )}
                                     </pre>
                                 )}
                             </div>
                             {isVerifyReport && <Loader size={"small"} />}
-                            {linksDetail && badLinkDetail === true ? (
+                            {Object.keys(scanResultDetail).length > 0 &&
+                            badLinkDetail === true ? (
                                 <Message variant={"danger"}>
                                     "{linksDetail}" is malicious. Please remove
                                     or use another link
                                 </Message>
                             ) : (
-                                <Message variant={"info"}>
-                                    "<strong>{linksDetail}</strong>" is safe.
-                                    You can use this link
-                                </Message>
+                                Object.keys(scanResultDetail).length > 0 &&
+                                badLinkDetail === false && (
+                                    <Message variant={"info"}>
+                                        "<strong>{linksDetail}</strong>" is
+                                        safe. You can use this link
+                                    </Message>
+                                )
                             )}
                             <Button
                                 type={"button"}
                                 variant={"primary"}
-                                onClick={verifyURLsDetail}
+                                onClick={showLinkD}
+                                className={"mb-3"}
                             >
-                                Verify Links
+                                Show Links Detail
                             </Button>
+                            {/*<Button*/}
+                            {/*    type={"button"}*/}
+                            {/*    variant={"primary"}*/}
+                            {/*    onClick={verifyURLsDetail}*/}
+                            {/*    className={"mb-3"}*/}
+                            {/*>*/}
+                            {/*    Verify Links*/}
+                            {/*</Button>*/}
                         </div>
 
                         <div className={"mt-3"}>

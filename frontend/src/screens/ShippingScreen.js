@@ -64,7 +64,7 @@ const ShippingScreen = () => {
                 setAddressType(address.addressType);
             }
         }
-    }, [userInfo, navigate, success, dispatch]);
+    }, [userInfo, navigate, success, dispatch, address]);
 
     const submitHandler = (e) => {
         e.preventDefault();
