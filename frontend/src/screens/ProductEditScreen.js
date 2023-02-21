@@ -60,7 +60,7 @@ const ProductEditScreen = () => {
     // const [content, setContent] = useState("");
     const [linksGeneral, setLinksGeneral] = useState([]);
     const [linksDetail, setLinksDetail] = useState([]);
-    const [scannedLinks, setScannedLinks] = useState([]);
+
     // VirusTotal
     const [scanIDGeneral, setScanIDGeneral] = useState({});
     const [scanIDDetail, setScanIDDetail] = useState({});
@@ -71,8 +71,13 @@ const ProductEditScreen = () => {
     const [scanResultGeneral, setScanResultGeneral] = useState({});
     const [scanResultDetail, setScanResultDetail] = useState({});
     const [isVerifyReport, setIsVerifyReport] = useState(false);
-    const [badLinkGeneral, setBadLinkGeneral] = useState(undefined);
-    const [badLinkDetail, setBadLinkDetail] = useState(undefined);
+    const [isBadLinkGeneral, setIsBadLinkGeneral] = useState(undefined);
+    const [isBadLinkDetail, setIsBadLinkDetail] = useState(undefined);
+    // TODO: Create child schema inside Product to store links: productId, scanned, bad, good, userInserted, dateInserted
+    // TODO: Status Pending for Review for products that have more than 4 links
+    const [badLinksGeneral, setBadLinksGeneral] = useState([]);
+    const [goodLinksGeneral, setGoodLinksGeneral] = useState([]);
+    const [scannedLinks, setScannedLinks] = useState([]);
 
     const dispatch = useDispatch();
 
@@ -154,78 +159,117 @@ const ProductEditScreen = () => {
     };
 
     const verifyURLsGeneral = async (linksG) => {
-        // Sending URL to Virus Total API
-        setIsSendingURLGeneral(true);
+        /*
+            Set links max limit to 4 and check
+            if there are more than 4 links
+            then set delay time between each link
+         */
+        const MAX_REQUESTS_PER_MINUTE = 4;
+        const DELAY_BETWEEN_REQUESTS_MS =
+            Object.keys(linksG).length > 4
+                ? (60 * 1000) / MAX_REQUESTS_PER_MINUTE
+                : 1;
+
         let scanID = "";
         let scanResult = "";
         let badLink = undefined;
 
-        console.log("LINKS G: " + linksG.toString());
-        console.log("LINKS G TYPE: " + typeof linksG);
+        setIsSendingURLGeneral(true);
 
-        const options = {
-            method: "POST",
-            url: virusTotalURL,
-            headers: {
-                accept: "application/json",
-                "x-apikey": virusTotalAPIKey,
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            data: new URLSearchParams({
-                url: linksG.toString() !== "" ? linksG.toString() : "",
-            }),
-        };
+        console.log("LINKS G TYPE: " + typeof linksG);
+        console.log("Scanned Links TYPE: " + typeof scannedLinks);
 
         if (linksG.toString() !== "") {
-            try {
-                await axios.request(options).then(async (response) => {
-                    console.log(
-                        "REPORT ID: " + response.data.data.id.split("-")[1]
-                    );
+            for (const link of linksG) {
+                const options = {
+                    method: "POST",
+                    url: virusTotalURL,
+                    headers: {
+                        accept: "application/json",
+                        "x-apikey": virusTotalAPIKey,
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    data: new URLSearchParams({
+                        url: link.toString() !== "" ? link.toString() : "",
+                    }),
+                };
 
-                    scanID = await response.data.data.id.split("-")[1];
-                    setScanIDGeneral(scanID);
+                try {
+                    // Sending URL to Virus Total API
+                    await axios.request(options).then(async (response) => {
+                        console.log(
+                            "REPORT ID: " + response.data.data.id.split("-")[1]
+                        );
+
+                        scanID = await response.data.data.id.split("-")[1];
+                        setScanIDGeneral(scanID);
+                        setIsSendingURLGeneral(false);
+
+                        // Get Report from scanID
+                        setIsGettingResultGeneral(true);
+
+                        const options = {
+                            method: "GET",
+                            headers: {
+                                accept: "application/json",
+                                "x-apikey": virusTotalAPIKey,
+                                "Content-Type": "application/json",
+                            },
+                        };
+
+                        const result = await axios.get(
+                            `${virusTotalURL}/${scanID}`,
+                            options
+                        );
+                        scanResult = await result.data.data.attributes
+                            .last_analysis_stats;
+                        setScanResultGeneral(scanResult);
+                        setIsGettingResultGeneral(false);
+                        if (!scannedLinks.includes(link)) {
+                            setScannedLinks((prevScannedLinks) => [
+                                ...prevScannedLinks,
+                                link,
+                            ]);
+                        }
+
+                        // Verify result
+                        setIsVerifyReport(true);
+                        if (scanResult && scanResult.malicious > 0) {
+                            badLink = true;
+                            // console.log("Link BAD");
+                            setIsBadLinkGeneral(true);
+                            setIsVerifyReport(false);
+                            // Push new bad link to setBadLinksGeneral state
+                            if (!badLinksGeneral.includes(link)) {
+                                setBadLinksGeneral((prevBadLinks) => [
+                                    ...prevBadLinks,
+                                    link,
+                                ]);
+                            }
+                        } else {
+                            badLink = false;
+                            // console.log("Link OK");
+                            setIsBadLinkGeneral(false);
+                            setIsVerifyReport(false);
+                            // Push new good link to setGoodLinksGeneral state
+                            if (!goodLinksGeneral.includes(link)) {
+                                setGoodLinksGeneral((prevGoodLinks) => [
+                                    ...prevGoodLinks,
+                                    link,
+                                ]);
+                            }
+                        }
+                    });
+
+                    // Wait before next request
+                    await new Promise((resolve) =>
+                        setTimeout(resolve, DELAY_BETWEEN_REQUESTS_MS)
+                    );
+                } catch (error) {
+                    console.error(error);
                     setIsSendingURLGeneral(false);
-
-                    // Get Report from scanID
-                    setIsGettingResultGeneral(true);
-
-                    const options = {
-                        method: "GET",
-                        headers: {
-                            accept: "application/json",
-                            "x-apikey": virusTotalAPIKey,
-                            "Content-Type": "application/json",
-                        },
-                    };
-
-                    const result = await axios.get(
-                        `${virusTotalURL}/${scanID}`,
-                        options
-                    );
-                    scanResult = await result.data.data.attributes
-                        .last_analysis_stats;
-                    setScanResultGeneral(scanResult);
                     setIsGettingResultGeneral(false);
-
-                    // Verify result
-                    setIsVerifyReport(true);
-                    if (scanResult && scanResult.malicious > 0) {
-                        badLink = true;
-                        console.log("Link BAD");
-                        setBadLinkGeneral(true);
-                        setIsVerifyReport(false);
-                    } else {
-                        badLink = false;
-                        setBadLinkGeneral(false);
-                        console.log("Link OK");
-                        setIsVerifyReport(false);
-                    }
-                });
-            } catch (error) {
-                console.error(error);
-                setIsSendingURLGeneral(false);
-                setIsGettingResultGeneral(false);
+                }
             }
         } else console.log("no linksG");
         console.log("badLink Return: " + badLink);
@@ -367,11 +411,11 @@ const ProductEditScreen = () => {
                     if (scanResult && scanResult.malicious > 0) {
                         badLink = true;
                         console.log("Link BAD");
-                        setBadLinkDetail(true);
+                        setIsBadLinkDetail(true);
                         setIsVerifyReport(false);
                     } else {
                         badLink = false;
-                        setBadLinkDetail(false);
+                        setIsBadLinkDetail(false);
                         console.log("Link OK");
                         setIsVerifyReport(false);
                     }
@@ -389,8 +433,8 @@ const ProductEditScreen = () => {
 
     const editorChangeHandler = async () => {
         let cleanGeneral, cleanDetail;
-        setBadLinkGeneral(undefined);
-        setBadLinkDetail(undefined);
+        setIsBadLinkGeneral(undefined);
+        setIsBadLinkDetail(undefined);
         // console.log("Product general: " + product.general);
         // console.log("Product general Result: " + generalResult);
         if (generalRef.current && generalRef.current !== "") {
@@ -400,6 +444,24 @@ const ProductEditScreen = () => {
                 await setLinksGeneral(cleanG);
                 // console.log("CLEAN GENERAL: " + cleanG.toString());
             }
+
+            // TODO: Fix this, only get new links to scan
+            let newLinksG = [];
+            const filterLinksG = (a, b) => {
+                const links = a.filter((e) => !b.includes(e));
+                return newLinksG.push(links);
+            };
+
+            console.log("SCANNED LINKS: " + scannedLinks);
+            filterLinksG(cleanG, scannedLinks);
+            console.log("FILTERED LINKS G: " + newLinksG);
+
+            // let newLinksG = [];
+            // newLinksG = cleanG.filter((link) =>
+            //     newLinksG.push(!scannedLinks.includes(link))
+            // );
+            //
+            // console.log("FILTERED LINKS G: " + newLinksG);
 
             if (product.general !== cleanGeneral && cleanG.toString() !== "") {
                 await verifyURLsGeneral(cleanG);
@@ -475,11 +537,13 @@ const ProductEditScreen = () => {
 
     const showLinkG = () => {
         console.log("TYPE OF LINKs GENERAL: " + typeof linksGeneral);
-        console.log(linksGeneral);
-        console.log(linksGeneral.length);
+        console.log("LINKs GENERAL: " + linksGeneral);
+        console.log("LINKs GENERAL LENGTH: " + linksGeneral.length);
 
-        console.log(typeof scanResultGeneral);
-        console.log(scanResultGeneral);
+        // console.log(typeof scanResultGeneral);
+        // console.log(scanResultGeneral);
+
+        console.log("BAD LINKS ARRAY: " + badLinksGeneral);
     };
 
     const showLinkD = () => {
@@ -935,23 +999,31 @@ const ProductEditScreen = () => {
                             {isVerifyReport && <Loader size={"small"} />}
                             <>
                                 {scanResultGeneral &&
-                                JSON.stringify(scanResultGeneral) !== "{}" &&
-                                badLinkGeneral !== undefined ? (
-                                    // Object.keys(scanResultGeneral).length > 0 &&
-                                    badLinkGeneral === true ? (
-                                        <Message variant={"danger"}>
-                                            "{linksGeneral}" is malicious.
-                                            Please remove or use another link
+                                    JSON.stringify(scanResultGeneral) !==
+                                        "{}" &&
+                                    badLinksGeneral.length > 0 &&
+                                    badLinksGeneral.map((badLink, index) => (
+                                        <Message key={index} variant={"danger"}>
+                                            "{badLink}" is malicious. Please
+                                            remove or use another link
                                         </Message>
-                                    ) : (
-                                        <Message variant={"info"}>
-                                            "{linksGeneral}" is safe. You can
-                                            use this link
-                                        </Message>
-                                    )
-                                ) : (
-                                    <p>"Nothing"</p>
-                                )}
+                                    ))}
+                                {
+                                    scanResultGeneral &&
+                                        JSON.stringify(scanResultGeneral) !==
+                                            "{}" &&
+                                        goodLinksGeneral.length > 0 &&
+                                        goodLinksGeneral.map((link, index) => (
+                                            <Message
+                                                key={index}
+                                                variant={"info"}
+                                            >
+                                                "{link}" is safe. You can use
+                                                this link
+                                            </Message>
+                                        ))
+                                    // : ""}
+                                }
                             </>
                             <Button
                                 type={"button"}
@@ -1045,9 +1117,9 @@ const ProductEditScreen = () => {
                             <>
                                 {scanResultDetail &&
                                 JSON.stringify(scanResultDetail) !== "{}" &&
-                                badLinkDetail !== undefined ? (
+                                isBadLinkDetail !== undefined ? (
                                     // Object.keys(scanResultDetail).length > 0 &&
-                                    badLinkDetail === true ? (
+                                    isBadLinkDetail === true ? (
                                         <Message variant={"danger"}>
                                             "{linksDetail}" is malicious. Please
                                             remove or use another link
