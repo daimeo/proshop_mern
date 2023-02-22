@@ -5,6 +5,7 @@ import Product from "../models/productModel.js";
 // @route   GET /api/products
 // @access  Public
 const getProducts = asyncHandler(async (req, res) => {
+    // TODO: use this to optimize pagination: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator/next#using_next_with_a_list
     const pageSize = 10;
     const page = Number(req.query.pageNumber) || 1;
 

@@ -58,8 +58,10 @@ const ProductEditScreen = () => {
 
     // TinyMCE
     // const [content, setContent] = useState("");
-    const [linksGeneral, setLinksGeneral] = useState([]);
-    const [linksDetail, setLinksDetail] = useState([]);
+    const [linksGeneral, setLinksGeneral] = useState({});
+    const [linksDetail, setLinksDetail] = useState({});
+    const [totalLinksG, setTotalLinksG] = useState("");
+    const [totalLinksD, setTotalLinksD] = useState("");
 
     // VirusTotal
     const [scanIDGeneral, setScanIDGeneral] = useState({});
@@ -71,13 +73,13 @@ const ProductEditScreen = () => {
     const [scanResultGeneral, setScanResultGeneral] = useState({});
     const [scanResultDetail, setScanResultDetail] = useState({});
     const [isVerifyReport, setIsVerifyReport] = useState(false);
-    const [isBadLinkGeneral, setIsBadLinkGeneral] = useState(undefined);
-    const [isBadLinkDetail, setIsBadLinkDetail] = useState(undefined);
     // TODO: Create child schema inside Product to store links: productId, scanned, bad, good, userInserted, dateInserted
     // TODO: Status Pending for Review for products that have more than 4 links
     const [badLinksGeneral, setBadLinksGeneral] = useState([]);
     const [goodLinksGeneral, setGoodLinksGeneral] = useState([]);
-    const [scannedLinks, setScannedLinks] = useState([]);
+    const [badLinksDetail, setBadLinksDetail] = useState([]);
+    const [goodLinksDetail, setGoodLinksDetail] = useState([]);
+    const [scannedLinks, setScannedLinks] = useState(new Set());
 
     const dispatch = useDispatch();
 
@@ -96,9 +98,6 @@ const ProductEditScreen = () => {
 
     const generalRef = useRef(null);
     const detailRef = useRef(null);
-
-    // const encodedParams = new URLSearchParams();
-    // encodedParams.set("url", linksGeneral.toString());
 
     useEffect(() => {
         if (successUpdate) {
@@ -176,11 +175,18 @@ const ProductEditScreen = () => {
 
         setIsSendingURLGeneral(true);
 
-        console.log("LINKS G TYPE: " + typeof linksG);
-        console.log("Scanned Links TYPE: " + typeof scannedLinks);
+        // console.log("LINKS G TYPE: " + typeof linksG);
+        // console.log("Scanned Links TYPE: " + typeof scannedLinks);
+        // console.log("generalResult TYPE: " + typeof generalResult);
+        // console.log("generalResult: " + generalResult);
 
         if (linksG.toString() !== "") {
             for (const link of linksG) {
+                if (scannedLinks.has(link) || generalResult.includes(link)) {
+                    // Skip link if already scanned (past and future)
+                    continue;
+                }
+
                 const options = {
                     method: "POST",
                     url: virusTotalURL,
@@ -198,7 +204,8 @@ const ProductEditScreen = () => {
                     // Sending URL to Virus Total API
                     await axios.request(options).then(async (response) => {
                         console.log(
-                            "REPORT ID: " + response.data.data.id.split("-")[1]
+                            "SEND REPORT ID: " +
+                                response.data.data.id.split("-")[1]
                         );
 
                         scanID = await response.data.data.id.split("-")[1];
@@ -225,19 +232,25 @@ const ProductEditScreen = () => {
                             .last_analysis_stats;
                         setScanResultGeneral(scanResult);
                         setIsGettingResultGeneral(false);
-                        if (!scannedLinks.includes(link)) {
-                            setScannedLinks((prevScannedLinks) => [
-                                ...prevScannedLinks,
-                                link,
-                            ]);
-                        }
+
+                        // Add scanned links to Set
+                        setScannedLinks(
+                            (prevScannedLinks) =>
+                                new Set(prevScannedLinks.add(link))
+                        );
+                        // if (!scannedLinks.includes(link)) {
+                        //     setScannedLinks((prevScannedLinks) => [
+                        //         ...prevScannedLinks,
+                        //         link,
+                        //     ]);
+                        // }
 
                         // Verify result
                         setIsVerifyReport(true);
                         if (scanResult && scanResult.malicious > 0) {
                             badLink = true;
                             // console.log("Link BAD");
-                            setIsBadLinkGeneral(true);
+                            // setIsBadLinkGeneral(true);
                             setIsVerifyReport(false);
                             // Push new bad link to setBadLinksGeneral state
                             if (!badLinksGeneral.includes(link)) {
@@ -249,7 +262,7 @@ const ProductEditScreen = () => {
                         } else {
                             badLink = false;
                             // console.log("Link OK");
-                            setIsBadLinkGeneral(false);
+                            // setIsBadLinkGeneral(false);
                             setIsVerifyReport(false);
                             // Push new good link to setGoodLinksGeneral state
                             if (!goodLinksGeneral.includes(link)) {
@@ -272,7 +285,7 @@ const ProductEditScreen = () => {
                 }
             }
         } else console.log("no linksG");
-        console.log("badLink Return: " + badLink);
+        // console.log("badLink Return: " + badLink);
         return badLink;
     };
 
@@ -355,121 +368,183 @@ const ProductEditScreen = () => {
 */
 
     const verifyURLsDetail = async (linksD) => {
-        // Sending URL to Virus Total API
-        setIsSendingURLDetail(true);
+        /*
+            Set links max limit to 4 and check
+            if there are more than 4 links
+            then set delay time between each link
+         */
+        const MAX_REQUESTS_PER_MINUTE = 4;
+        const DELAY_BETWEEN_REQUESTS_MS =
+            Object.keys(linksD).length > 4
+                ? (60 * 1000) / MAX_REQUESTS_PER_MINUTE
+                : 1;
+
         let scanID = "";
         let scanResult = "";
         let badLink = undefined;
 
-        const options = {
-            method: "POST",
-            url: virusTotalURL,
-            headers: {
-                accept: "application/json",
-                "x-apikey": virusTotalAPIKey,
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            data: new URLSearchParams({
-                url: linksD.toString() !== "" ? linksD.toString() : "",
-            }),
-        };
+        setIsSendingURLDetail(true);
+
+        // console.log("LINKS G TYPE: " + typeof linksG);
+        // console.log("Scanned Links TYPE: " + typeof scannedLinks);
+        // console.log("generalResult TYPE: " + typeof generalResult);
+        // console.log("generalResult: " + generalResult);
 
         if (linksD.toString() !== "") {
-            try {
-                await axios.request(options).then(async (response) => {
-                    console.log(
-                        "REPORT ID: " + response.data.data.id.split("-")[1]
-                    );
+            for (const link of linksD) {
+                if (scannedLinks.has(link) || detailResult.includes(link)) {
+                    // Skip link if already scanned (past and future)
+                    continue;
+                }
 
-                    scanID = await response.data.data.id.split("-")[1];
-                    setScanIDDetail(scanID);
+                const options = {
+                    method: "POST",
+                    url: virusTotalURL,
+                    headers: {
+                        accept: "application/json",
+                        "x-apikey": virusTotalAPIKey,
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    data: new URLSearchParams({
+                        url: link.toString() !== "" ? link.toString() : "",
+                    }),
+                };
+
+                try {
+                    // Sending URL to Virus Total API
+                    await axios.request(options).then(async (response) => {
+                        console.log(
+                            "SEND REPORT ID: " +
+                                response.data.data.id.split("-")[1]
+                        );
+
+                        scanID = await response.data.data.id.split("-")[1];
+                        setScanIDDetail(scanID);
+                        setIsSendingURLDetail(false);
+
+                        // Get Report from scanID
+                        setIsGettingResultDetail(true);
+
+                        const options = {
+                            method: "GET",
+                            headers: {
+                                accept: "application/json",
+                                "x-apikey": virusTotalAPIKey,
+                                "Content-Type": "application/json",
+                            },
+                        };
+
+                        const result = await axios.get(
+                            `${virusTotalURL}/${scanID}`,
+                            options
+                        );
+                        scanResult = await result.data.data.attributes
+                            .last_analysis_stats;
+                        setScanResultDetail(scanResult);
+                        setIsGettingResultDetail(false);
+
+                        // Add scanned links to Set
+                        setScannedLinks(
+                            (prevScannedLinks) =>
+                                new Set(prevScannedLinks.add(link))
+                        );
+                        // if (!scannedLinks.includes(link)) {
+                        //     setScannedLinks((prevScannedLinks) => [
+                        //         ...prevScannedLinks,
+                        //         link,
+                        //     ]);
+                        // }
+
+                        // Verify result
+                        setIsVerifyReport(true);
+                        if (scanResult && scanResult.malicious > 0) {
+                            badLink = true;
+                            // console.log("Link BAD");
+                            // setIsBadLinkDetail(true);
+                            setIsVerifyReport(false);
+                            // Push new bad link to setBadLinksDetail state
+                            if (!badLinksDetail.includes(link)) {
+                                setBadLinksDetail((prevBadLinks) => [
+                                    ...prevBadLinks,
+                                    link,
+                                ]);
+                            }
+                        } else {
+                            badLink = false;
+                            // console.log("Link OK");
+                            // setIsBadLinkDetail(false);
+                            setIsVerifyReport(false);
+                            // Push new good link to setGoodLinksDetail state
+                            if (!goodLinksDetail.includes(link)) {
+                                setGoodLinksDetail((prevGoodLinks) => [
+                                    ...prevGoodLinks,
+                                    link,
+                                ]);
+                            }
+                        }
+                    });
+
+                    // Wait before next request
+                    await new Promise((resolve) =>
+                        setTimeout(resolve, DELAY_BETWEEN_REQUESTS_MS)
+                    );
+                } catch (error) {
+                    console.error(error);
                     setIsSendingURLDetail(false);
-
-                    // Get Report from scanID
-                    setIsGettingResultDetail(true);
-
-                    const options = {
-                        method: "GET",
-                        headers: {
-                            accept: "application/json",
-                            "x-apikey": virusTotalAPIKey,
-                            "Content-Type": "application/json",
-                        },
-                    };
-
-                    const result = await axios.get(
-                        `${virusTotalURL}/${scanID}`,
-                        options
-                    );
-                    scanResult = await result.data.data.attributes
-                        .last_analysis_stats;
-                    setScanResultDetail(scanResult);
                     setIsGettingResultDetail(false);
-
-                    // Verify result
-                    setIsVerifyReport(true);
-                    if (scanResult && scanResult.malicious > 0) {
-                        badLink = true;
-                        console.log("Link BAD");
-                        setIsBadLinkDetail(true);
-                        setIsVerifyReport(false);
-                    } else {
-                        badLink = false;
-                        setIsBadLinkDetail(false);
-                        console.log("Link OK");
-                        setIsVerifyReport(false);
-                    }
-                });
-            } catch (error) {
-                console.error(error);
-                setIsSendingURLDetail(false);
-                setIsGettingResultDetail(false);
+                }
             }
         } else console.log("no linksD");
-
-        console.log("badLink Return: " + badLink);
+        // console.log("badLink Return: " + badLink);
         return badLink;
     };
 
     const editorChangeHandler = async () => {
         let cleanGeneral, cleanDetail;
-        setIsBadLinkGeneral(undefined);
-        setIsBadLinkDetail(undefined);
-        // console.log("Product general: " + product.general);
-        // console.log("Product general Result: " + generalResult);
+        // setIsBadLinkGeneral(undefined);
+        // setIsBadLinkDetail(undefined);
+        // console.log("product.general: " + product.general);
+        // console.log("generalRef.current: " + generalRef.current);
+
         if (generalRef.current && generalRef.current !== "") {
             cleanGeneral = await purifyContent(generalRef.current.getContent());
-            const cleanG = extractLinks(cleanGeneral);
-            if (Object.keys(cleanG).length > 0) {
-                await setLinksGeneral(cleanG);
-                // console.log("CLEAN GENERAL: " + cleanG.toString());
+            const linksG = extractLinks(cleanGeneral);
+            if (Object.keys(linksG).length > 0) {
+                const linksGCount = await linksG.reduce((count, link) => {
+                    count[link] = (count[link] || 0) + 1;
+                    setTotalLinksG(linksG.length);
+                    return count;
+                }, {});
+                await setLinksGeneral(linksGCount);
+                // console.log("CLEAN GENERAL: " + linksG.toString());
             }
 
-            // TODO: Fix this, only get new links to scan
-            let newLinksG = [];
-            const filterLinksG = (a, b) => {
-                const links = a.filter((e) => !b.includes(e));
-                return newLinksG.push(links);
-            };
-
-            console.log("SCANNED LINKS: " + scannedLinks);
-            filterLinksG(cleanG, scannedLinks);
-            console.log("FILTERED LINKS G: " + newLinksG);
+            // console.log("TYPE OF CLEANG: " + typeof linksG); // Object
 
             // let newLinksG = [];
-            // newLinksG = cleanG.filter((link) =>
+            // const filterLinksG = (a, b) => {
+            //     const links = a.filter((e) => !b.has(e));
+            //     return newLinksG.push(links);
+            // };
+
+            // console.log(scannedLinks);
+            // filterLinksG(linksG, scannedLinks);
+            // console.log("FILTERED LINKS G: " + newLinksG);
+
+            // let newLinksG = [];
+            // newLinksG = linksG.filter((link) =>
             //     newLinksG.push(!scannedLinks.includes(link))
             // );
             //
             // console.log("FILTERED LINKS G: " + newLinksG);
 
-            if (product.general !== cleanGeneral && cleanG.toString() !== "") {
-                await verifyURLsGeneral(cleanG);
+            if (product.general !== cleanGeneral && linksG.toString() !== "") {
+                await verifyURLsGeneral(linksG);
                 // console.log("badLinksG: " + badLinksG);
                 // setBadLinkGeneral(badLinksG);
             }
 
-            if (Object.keys(cleanG).length === 0) {
+            if (Object.keys(linksG).length === 0) {
                 setLinksGeneral([]);
                 setScanIDGeneral({});
                 setScanResultGeneral({});
@@ -479,17 +554,22 @@ const ProductEditScreen = () => {
 
         if (detailRef.current && detailRef.current !== "") {
             cleanDetail = await purifyContent(detailRef.current.getContent());
-            const cleanD = extractLinks(cleanDetail);
-            if (Object.keys(cleanD).length > 0) {
-                await setLinksDetail(cleanD);
-                // console.log("CLEAN DETAIL: " + cleanD.toString());
+            const linksD = extractLinks(cleanDetail);
+            if (Object.keys(linksD).length > 0) {
+                const linksDCount = linksD.reduce((count, link) => {
+                    count[link] = (count[link] || 0) + 1;
+                    setTotalLinksD(linksD.length);
+                    return count;
+                }, {});
+                await setLinksDetail(linksDCount);
+                // console.log("CLEAN DETAIL: " + linksD.toString());
             }
-            console.log("CLEAND TOSTRING: " + cleanD.toString());
+            // console.log("CLEAND TOSTRING: " + linksD.toString());
 
-            if (product.detail !== cleanDetail && cleanD.toString() !== "") {
-                await verifyURLsDetail(cleanD);
+            if (product.detail !== cleanDetail && linksD.toString() !== "") {
+                await verifyURLsDetail(linksD);
             }
-            if (Object.keys(cleanD).length === 0) {
+            if (Object.keys(linksD).length === 0) {
                 setLinksDetail([]);
                 setScanIDDetail({});
                 setScanResultDetail({});
@@ -506,6 +586,7 @@ const ProductEditScreen = () => {
             generalRef.current !== "" &&
             generalRef.current !== product.general
         ) {
+            console.log("PURIFYING...");
             cleanGeneral = await purifyContent(generalRef.current.getContent());
             setGeneralResult(cleanGeneral);
         }
@@ -536,14 +617,15 @@ const ProductEditScreen = () => {
     // };
 
     const showLinkG = () => {
-        console.log("TYPE OF LINKs GENERAL: " + typeof linksGeneral);
-        console.log("LINKs GENERAL: " + linksGeneral);
-        console.log("LINKs GENERAL LENGTH: " + linksGeneral.length);
+        // console.log("TYPE OF LINKs GENERAL: " + typeof linksGeneral);
+        // console.log("LINKs GENERAL: " + linksGeneral);
+        // console.log("LINKs GENERAL LENGTH: " + linksGeneral.length);
 
         // console.log(typeof scanResultGeneral);
         // console.log(scanResultGeneral);
 
-        console.log("BAD LINKS ARRAY: " + badLinksGeneral);
+        // console.log("BAD LINKS ARRAY: " + badLinksGeneral);
+        console.log(scannedLinks);
     };
 
     const showLinkD = () => {
@@ -733,11 +815,15 @@ const ProductEditScreen = () => {
         }
     };
 
-    const editorHandler = async (e) => {
-        const result = await setEditorContent(e);
-        console.log("EDITOR RESULT: " + JSON.stringify(result.cleanGeneral));
-        console.log("EDITOR RESULT: " + JSON.stringify(result.cleanDetail));
-    };
+    // const editorHandler = async (e) => {
+    //     const result = await setEditorContent(e);
+    //     console.log(
+    //         "EDITOR RESULT cleanGeneral: " + JSON.stringify(result.cleanGeneral)
+    //     );
+    //     console.log(
+    //         "EDITOR RESULT cleanDetail: " + JSON.stringify(result.cleanDetail)
+    //     );
+    // };
 
     const submitHandler = async (e) => {
         e.preventDefault();
@@ -944,59 +1030,81 @@ const ProductEditScreen = () => {
                             </Form.Group>
                         </div>
                         <div className={"mb-3"}>
+                            {/*<ul>*/}
+                            {/*    {linksGeneral &&*/}
+                            {/*        Object.keys(linksGeneral).length > 0 &&*/}
+                            {/*        linksGeneral.map((link, index) => (*/}
+                            {/*            <li key={index}>{link}</li>*/}
+                            {/*        ))}*/}
+                            {/*</ul>*/}
                             <ul>
                                 {linksGeneral &&
-                                    linksGeneral.length > 0 &&
-                                    linksGeneral.map((link, index) => (
-                                        <li key={index}>{link}</li>
-                                    ))}
-                            </ul>
-                            <div>
-                                {isSendingURLGeneral && !scanIDGeneral ? (
-                                    <>
-                                        <p>Scanning...</p>{" "}
-                                        <Loader size={"small"} />{" "}
-                                    </>
-                                ) : (
-                                    scanIDGeneral &&
-                                    Object.keys(scanIDGeneral).length > 0 && (
+                                    Object.keys(linksGeneral).length > 0 && (
                                         <>
-                                            <hr />
-                                            <h4>Scan ID</h4>
-                                            <pre>
-                                                {JSON.stringify(scanIDGeneral)}
-                                            </pre>
-                                            <hr />
-                                        </>
-                                    )
-                                )}
-                            </div>
-                            <div>
-                                {isGettingResultGeneral ? (
-                                    <>
-                                        <p>Scanning...</p>{" "}
-                                        <Loader size={"small"} />{" "}
-                                    </>
-                                ) : (
-                                    <pre>
-                                        {scanResultGeneral &&
-                                            Object.keys(scanResultGeneral)
-                                                .length > 0 && (
-                                                <>
-                                                    <h4>Scan Result</h4>
-                                                    "Scanning Result is:{" "}
-                                                    {JSON.stringify(
-                                                        scanResultGeneral,
-                                                        null,
-                                                        2
-                                                    )}
-                                                    <hr />
-                                                </>
+                                            <h4>
+                                                Inserted Links (Total :{" "}
+                                                {totalLinksG})
+                                            </h4>
+                                            {Object.entries(linksGeneral).map(
+                                                ([link, count]) => (
+                                                    <li key={link}>
+                                                        {link} : {count}{" "}
+                                                        occurrences
+                                                    </li>
+                                                )
                                             )}
-                                    </pre>
-                                )}
-                            </div>
-                            {isVerifyReport && <Loader size={"small"} />}
+                                        </>
+                                    )}
+                            </ul>
+                            {/*<div>*/}
+                            {/*    {isSendingURLGeneral && !scanIDGeneral ? (*/}
+                            {/*        <>*/}
+                            {/*            <p>Scanning...</p>{" "}*/}
+                            {/*            <Loader size={"small"} />{" "}*/}
+                            {/*        </>*/}
+                            {/*    ) : (*/}
+                            {/*        scanIDGeneral &&*/}
+                            {/*        Object.keys(scanIDGeneral).length > 0 && (*/}
+                            {/*            <>*/}
+                            {/*                <hr />*/}
+                            {/*                <h4>Scan ID</h4>*/}
+                            {/*                <pre>*/}
+                            {/*                    {JSON.stringify(scanIDGeneral)}*/}
+                            {/*                </pre>*/}
+                            {/*                <hr />*/}
+                            {/*            </>*/}
+                            {/*        )*/}
+                            {/*    )}*/}
+                            {/*</div>*/}
+                            {/*<div>*/}
+                            {/*    {isGettingResultGeneral ? (*/}
+                            {/*        <>*/}
+                            {/*            <p>Scanning...</p>{" "}*/}
+                            {/*            <Loader size={"small"} />{" "}*/}
+                            {/*        </>*/}
+                            {/*    ) : (*/}
+                            {/*        <pre>*/}
+                            {/*            {scanResultGeneral &&*/}
+                            {/*                Object.keys(scanResultGeneral)*/}
+                            {/*                    .length > 0 && (*/}
+                            {/*                    <>*/}
+                            {/*                        <h4>Scan Result</h4>*/}
+                            {/*                        "Scanning Result is:{" "}*/}
+                            {/*                        {JSON.stringify(*/}
+                            {/*                            scanResultGeneral,*/}
+                            {/*                            null,*/}
+                            {/*                            2*/}
+                            {/*                        )}*/}
+                            {/*                        <hr />*/}
+                            {/*                    </>*/}
+                            {/*                )}*/}
+                            {/*        </pre>*/}
+                            {/*    )}*/}
+                            {/*</div>*/}
+                            {((isSendingURLGeneral && !scanIDGeneral) ||
+                                isGettingResultGeneral) && (
+                                <Loader size={"small"} />
+                            )}
                             <>
                                 {scanResultGeneral &&
                                     JSON.stringify(scanResultGeneral) !==
@@ -1063,76 +1171,98 @@ const ProductEditScreen = () => {
                         <div className={"mb-3"}>
                             <ul>
                                 {linksDetail &&
-                                    linksDetail.length > 0 &&
-                                    linksDetail.map((link, index) => (
-                                        <li key={index}>{link}</li>
-                                    ))}
-                            </ul>
-                            <div>
-                                {isSendingURLDetail && !scanIDDetail ? (
-                                    <>
-                                        <p>Scanning...</p>{" "}
-                                        <Loader size={"small"} />{" "}
-                                    </>
-                                ) : (
-                                    scanIDDetail &&
-                                    Object.keys(scanIDDetail).length > 0 && (
+                                    Object.keys(linksDetail).length > 0 && (
                                         <>
-                                            <hr />
-                                            <h4>Scan ID</h4>
-                                            <pre>
-                                                {JSON.stringify(scanIDDetail)}
-                                            </pre>
-                                            <hr />
-                                        </>
-                                    )
-                                )}
-                            </div>
-                            <div>
-                                {isGettingResultDetail ? (
-                                    <>
-                                        <p>Scanning...</p>{" "}
-                                        <Loader size={"small"} />{" "}
-                                    </>
-                                ) : (
-                                    <pre>
-                                        {scanResultDetail &&
-                                            Object.keys(scanResultDetail)
-                                                .length > 0 && (
-                                                <>
-                                                    <h4>Scan Result</h4>
-                                                    "Scanning Result is:{" "}
-                                                    {JSON.stringify(
-                                                        scanResultDetail,
-                                                        null,
-                                                        2
-                                                    )}
-                                                    <hr />
-                                                </>
+                                            <h4>
+                                                Inserted Links (Total:{" "}
+                                                {totalLinksD})
+                                            </h4>
+                                            {Object.entries(linksDetail).map(
+                                                ([link, count]) => (
+                                                    <li key={link}>
+                                                        {link}: {count}{" "}
+                                                        occurrences
+                                                    </li>
+                                                )
                                             )}
-                                    </pre>
-                                )}
-                            </div>
-                            {isVerifyReport && <Loader size={"small"} />}
+                                        </>
+                                    )}
+                            </ul>
+                            {/*<div>*/}
+                            {/*    {isSendingURLDetail && !scanIDDetail ? (*/}
+                            {/*        <>*/}
+                            {/*            <p>Scanning...</p>{" "}*/}
+                            {/*            <Loader size={"small"} />{" "}*/}
+                            {/*        </>*/}
+                            {/*    ) : (*/}
+                            {/*        scanIDDetail &&*/}
+                            {/*        Object.keys(scanIDDetail).length > 0 && (*/}
+                            {/*            <>*/}
+                            {/*                <hr />*/}
+                            {/*                <h4>Scan ID</h4>*/}
+                            {/*                <pre>*/}
+                            {/*                    {JSON.stringify(scanIDDetail)}*/}
+                            {/*                </pre>*/}
+                            {/*                <hr />*/}
+                            {/*            </>*/}
+                            {/*        )*/}
+                            {/*    )}*/}
+                            {/*</div>*/}
+                            {/*<div>*/}
+                            {/*    {isGettingResultDetail ? (*/}
+                            {/*        <>*/}
+                            {/*            <p>Scanning...</p>{" "}*/}
+                            {/*            <Loader size={"small"} />{" "}*/}
+                            {/*        </>*/}
+                            {/*    ) : (*/}
+                            {/*        <pre>*/}
+                            {/*            {scanResultDetail &&*/}
+                            {/*                Object.keys(scanResultDetail)*/}
+                            {/*                    .length > 0 && (*/}
+                            {/*                    <>*/}
+                            {/*                        <h4>Scan Result</h4>*/}
+                            {/*                        "Scanning Result is:{" "}*/}
+                            {/*                        {JSON.stringify(*/}
+                            {/*                            scanResultDetail,*/}
+                            {/*                            null,*/}
+                            {/*                            2*/}
+                            {/*                        )}*/}
+                            {/*                        <hr />*/}
+                            {/*                    </>*/}
+                            {/*                )}*/}
+                            {/*        </pre>*/}
+                            {/*    )}*/}
+                            {/*</div>*/}
+                            {((isSendingURLDetail && !scanIDDetail) ||
+                                isGettingResultDetail) && (
+                                <Loader size={"small"} />
+                            )}
                             <>
                                 {scanResultDetail &&
-                                JSON.stringify(scanResultDetail) !== "{}" &&
-                                isBadLinkDetail !== undefined ? (
-                                    // Object.keys(scanResultDetail).length > 0 &&
-                                    isBadLinkDetail === true ? (
-                                        <Message variant={"danger"}>
-                                            "{linksDetail}" is malicious. Please
+                                    JSON.stringify(scanResultDetail) !== "{}" &&
+                                    badLinksDetail.length > 0 &&
+                                    badLinksDetail.map((badLink, index) => (
+                                        <Message key={index} variant={"danger"}>
+                                            "{badLink}" is malicious. Please
                                             remove or use another link
                                         </Message>
-                                    ) : (
-                                        <Message variant={"info"}>
-                                            "{linksDetail}" is safe. You can use
-                                            this link
-                                        </Message>
-                                    )
-                                ) : (
-                                    <p>"Nothing"</p>
-                                )}
+                                    ))}
+                                {
+                                    scanResultDetail &&
+                                        JSON.stringify(scanResultDetail) !==
+                                            "{}" &&
+                                        goodLinksDetail.length > 0 &&
+                                        goodLinksDetail.map((link, index) => (
+                                            <Message
+                                                key={index}
+                                                variant={"info"}
+                                            >
+                                                "{link}" is safe. You can use
+                                                this link
+                                            </Message>
+                                        ))
+                                    // : ""}
+                                }
                             </>
                             <Button
                                 type={"button"}
@@ -1156,14 +1286,14 @@ const ProductEditScreen = () => {
                             <Button type="submit" variant="primary">
                                 Update
                             </Button>
-                            <Button
-                                type="submit"
-                                variant="primary"
-                                onClick={editorHandler}
-                                className={"mx-1"}
-                            >
-                                Check Editor Content
-                            </Button>
+                            {/*<Button*/}
+                            {/*    type="submit"*/}
+                            {/*    variant="primary"*/}
+                            {/*    onClick={editorHandler}*/}
+                            {/*    className={"mx-1"}*/}
+                            {/*>*/}
+                            {/*    Check Editor Content*/}
+                            {/*</Button>*/}
                         </div>
                     </Form>
                 )}

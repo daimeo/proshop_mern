@@ -1,3 +1,7 @@
+https://medium.com/@ajaysikdar/deploy-reactjs-app-with-nodejs-server-on-google-app-engine-f862c81457de
+https://www.codingdeft.com/posts/react-deploy-google-cloud-app-engine/
+https://viblo.asia/p/deploy-react-app-len-aws-s3-OeVKB8xQlkW
+
 # ProShop eCommerce Platform
 
 > eCommerce platform built with the MERN stack & Redux.

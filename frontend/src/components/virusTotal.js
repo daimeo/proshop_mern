@@ -3,6 +3,11 @@ import axios from "axios";
 import Loader from "./Loader";
 import Message from "./Message";
 
+// TODO: FIX THIS. NOT WORKING
+/*
+    Upon user input => only scan new links
+    Upon loaded with existent links => not scan
+ */
 const virusTotal = ({
     isVerifyReport,
     setIsSendingURL,
