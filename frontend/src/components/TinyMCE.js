@@ -6,7 +6,7 @@ const TinyMCE = ({
     editorRef,
     content,
     file_picker_callback,
-    log,
+    // log,
     editorChangeHandler,
 }) => {
     // window.tinymce.PluginManager.add("linkScanner", (editor, url) => {

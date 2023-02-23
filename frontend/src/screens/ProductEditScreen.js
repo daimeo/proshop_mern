@@ -34,6 +34,8 @@ const ProductEditScreen = () => {
     //     getValues,
     // } = useForm();
 
+    const [config, setConfig] = useState({});
+
     const [name, setName] = useState("");
     const [price, setPrice] = useState(0);
     const [image, setImage] = useState("");
@@ -120,6 +122,12 @@ const ProductEditScreen = () => {
                     setVirusTotalURL(data.virusTotalURL);
                     setVirusTotalAPIKey(data.virusTotalAPIKey);
                 })();
+            }
+
+            if (Object.keys(config).length === 0) {
+                axios.get("/api/config").then((response) => {
+                    setConfig(response.data);
+                });
             }
 
             // console.log("Product Detail: " + product.detail);
@@ -664,7 +672,7 @@ const ProductEditScreen = () => {
     };
 
     const editorChangeHandler = async () => {
-        let cleanGeneral, cleanDetail;
+        // let cleanGeneral, cleanDetail;
         // setIsBadLinkGeneral(undefined);
         // setIsBadLinkDetail(undefined);
         // console.log("product.general: " + product.general);
@@ -672,7 +680,9 @@ const ProductEditScreen = () => {
 
         // TODO: Only scan if it's external links
         if (generalRef.current && generalRef.current !== "") {
-            cleanGeneral = await purifyContent(generalRef.current.getContent());
+            const cleanGeneral = await purifyContent(
+                generalRef.current.getContent()
+            );
             const linksG = await extractLinks(cleanGeneral);
             if (linksG && Object.keys(linksG).length > 0) {
                 const linksGCount = await linksG.reduce((count, link) => {
@@ -718,7 +728,9 @@ const ProductEditScreen = () => {
         }
 
         if (detailRef.current && detailRef.current !== "") {
-            cleanDetail = await purifyContent(detailRef.current.getContent());
+            const cleanDetail = await purifyContent(
+                detailRef.current.getContent()
+            );
             const linksD = extractLinks(cleanDetail);
             if (Object.keys(linksD).length > 0) {
                 const linksDCount = linksD.reduce((count, link) => {
