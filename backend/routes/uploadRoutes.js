@@ -2,6 +2,7 @@ import path from "path";
 import express from "express";
 import multer from "multer";
 import dotenv from "dotenv";
+import * as fs from "fs";
 // import fs from "fs";
 //
 // const port = process.env.APP_PORT; // 8081
@@ -10,6 +11,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const router = express.Router();
+
+// let counter = 1;
 
 const storage = multer.diskStorage({
     destination(req, file, cb) {
@@ -47,10 +50,31 @@ const upload = multer({
     },
 });
 
+// Single file
 router.post("/", upload.single("image"), (req, res) => {
-    res.send(`/${req.file.path}`);
-    console.log(`/${req.file.path}`);
+    const fileExt = req.file.originalname.split(".")[1];
+    const PName = req.body.productName.replace(/ /g, "_");
+    const PPrice = req.body.productPrice;
+    const newFileName = `${PName}-${PPrice}-${Date.now()}.${fileExt}`;
+    const newPath = `${req.file.destination}${newFileName}`;
+
+    // Rename the file before saving
+    fs.rename(req.file.path, newPath, (err) => {
+        if (err) {
+            console.error(err);
+            res.status(500);
+            throw new Error("Error occurred while uploading the file.");
+        } else {
+            res.send(`/${newPath}`);
+        }
+    });
+
+    // console.log(`REQ BODY: ` + JSON.stringify(req.body, null, 2));
+    // res.send(`/${req.file.path}`);
+    // console.log(`/${req.file.path}`);
 });
+
+// Multiple file
 router.post("/multiple", upload.array("images", 5), (req, res) => {
     res.send(`/${req.file.path}`);
     console.log(`/${req.file.path}`);

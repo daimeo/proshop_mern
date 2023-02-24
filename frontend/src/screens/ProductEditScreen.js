@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Button, Form, Image } from "react-bootstrap";
+import { Button, Form, Image, ProgressBar } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import Message from "../components/Message";
 import Loader from "../components/Loader";
@@ -36,7 +36,7 @@ const ProductEditScreen = () => {
 
     const [config, setConfig] = useState({});
 
-    const [name, setName] = useState("");
+    const [productName, setProductName] = useState("");
     const [price, setPrice] = useState(0);
     const [image, setImage] = useState("");
     // const [image_base64, setImage_base64] = useState("");
@@ -48,6 +48,7 @@ const ProductEditScreen = () => {
     // const [detail, setDetail] = useState("");
     const [uploading, setUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState("");
+    const [uploadPercentage, setUploadPercentage] = useState(null);
     const [errorMsg, setErrorMsg] = useState("");
     const [isSuccess, setIsSuccess] = useState("");
     // const [url, setURL] = useState("");
@@ -140,7 +141,7 @@ const ProductEditScreen = () => {
             if (!product.name || product._id !== productId) {
                 dispatch(listProductDetails(productId));
             } else {
-                setName(product.name);
+                setProductName(product.name);
                 // console.log("NAME: " + product.name);
                 setPrice(product.price);
                 product.image && setImage(product.image);
@@ -924,7 +925,9 @@ const ProductEditScreen = () => {
         console.log(scanResultDetail);
     };
 
+    // TODO: Save user upload file/image separate for reusable
     const file_picker_callback = (callback, value, meta) => {
+        const millisecond = Date.now();
         const input = document.createElement("input");
         input.setAttribute("type", "file");
         input.setAttribute("accept", "image/*");
@@ -968,8 +971,14 @@ const ProductEditScreen = () => {
                 const blobInfo = blobCache.create(id, file, base64);
                 blobCache.add(blobInfo);
 
+                const alt =
+                    meta.alt ||
+                    `${productName}-${file.name.split(".")[0]}-${millisecond}.${
+                        file.name.split(".")[1]
+                    }`;
+
                 /* call the callback and populate the Title field with the file name */
-                callback(blobInfo.blobUri(), { title: file.name });
+                callback(blobInfo.blobUri(), { title: file.name, alt: alt });
             });
             reader.readAsDataURL(file);
         });
@@ -1055,6 +1064,7 @@ const ProductEditScreen = () => {
         let file;
         if (event.target.files.length > 0) {
             file = event.target.files[0];
+            // TODO: Only upload file if it's changed
             setSelectedFile(event.target.files[0]);
         } else {
             setErrorMsg("Please choose a file");
@@ -1098,8 +1108,11 @@ const ProductEditScreen = () => {
         // console.log("BASE64: " + base64);
         // console.log("BASE64IMG: " + image_base64);
         // setImage_base64("");
+
         const formData = new FormData();
         formData.append("image", selectedFile);
+        formData.append("productName", productName);
+        formData.append("productPrice", price.toString());
         // console.log("FILE: " + file);
         // console.log("FILE Selected: " + selectedFile);
 
@@ -1110,17 +1123,33 @@ const ProductEditScreen = () => {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
+                onUploadProgress: (progressEvent) => {
+                    const progress = Math.round(
+                        (progressEvent.loaded * 100) / progressEvent.total
+                    );
+                    setUploadPercentage(progress);
+                },
             };
 
-            // console.log("FORM DATA: " + formData);
+            /*
+                Axios post the image to backEnd then get the response from the uploadRoute: res.send(`...`);
+                the deconstructed { data } hold that response and the setImage(data) set it to the corresponding field
+             */
             const { data } = await axios.post("/api/upload", formData, config);
+
+            console.log("File uploaded DATA: " + JSON.stringify(data, null, 2));
 
             // console.log("UPLOAD DATA: " + JSON.stringify(data));
             setImage(data);
+            // setImage({ name: newFileName });
             setUploading(false);
+            setSelectedFile("");
+            setUploadPercentage(null);
         } catch (error) {
             console.error(error);
             setUploading(false);
+            setSelectedFile("");
+            setUploadPercentage(null);
         }
     };
 
@@ -1145,7 +1174,7 @@ const ProductEditScreen = () => {
         dispatch(
             updateProduct({
                 _id: productId,
-                name,
+                name: productName,
                 price,
                 brand,
                 category,
@@ -1203,9 +1232,9 @@ const ProductEditScreen = () => {
                             <Form.Label>Name</Form.Label>
                             <Form.Control
                                 type="name"
-                                placeholder="Enter name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
+                                placeholder="Enter Product name"
+                                value={productName}
+                                onChange={(e) => setProductName(e.target.value)}
                             ></Form.Control>
                         </Form.Group>
 
@@ -1245,7 +1274,7 @@ const ProductEditScreen = () => {
                             {/*        {errors.productImage.message}*/}
                             {/*    </Message>*/}
                             {/*)}*/}
-                            {uploading && <Loader />}
+                            {/*{uploading && <Loader />}*/}
                             {isSuccess !== "fail" && (
                                 <Message variant={"success"}>
                                     Validation successfully
@@ -1254,10 +1283,30 @@ const ProductEditScreen = () => {
                             {errorMsg && (
                                 <Message variant={"danger"}>{errorMsg}</Message>
                             )}
+                            {uploading && uploadPercentage !== 0 ? (
+                                <div>
+                                    <ProgressBar
+                                        now={uploadPercentage}
+                                        label={
+                                            uploadPercentage !== 0
+                                                ? `${uploadPercentage}%`
+                                                : ""
+                                        }
+                                    />
+                                </div>
+                            ) : (
+                                ""
+                            )}
+                            {uploadPercentage && uploadPercentage === 100 && (
+                                <Message variant={"info"}>
+                                    Upload Successfully
+                                </Message>
+                            )}
                             <Button
-                                className={"btn btn-sm"}
+                                className={"btn btn-sm mt-3"}
                                 onClick={uploadFileHandler}
                                 variant={"primary"}
+                                disabled={uploading === true}
                             >
                                 Upload
                             </Button>

@@ -75,11 +75,10 @@ const TinyMCE = ({
                     automatic_uploads: true,
                     file_picker_types: "image",
                     file_picker_callback: file_picker_callback,
-                    mobile: {
-                        menubar: false, // Disable menubar on mobile
-                        promotion: false,
-                    },
-                    // image_title: true,
+                    image_source: false,
+                    image_title: true, // add the "Title" field to the image dialog
+                    image_alt_text: true, // enable automatic alt text
+                    image_description: true,
                     image_dimensions: true,
                     image_class_list: [
                         {
@@ -87,6 +86,10 @@ const TinyMCE = ({
                             value: "img-fluid", // Give the bootstrap class to the image uploaded by TinyMCE
                         },
                     ],
+                    mobile: {
+                        menubar: false, // Disable menubar on mobile
+                        promotion: false,
+                    },
                     // setup: (editor) => {
                     //     editor.ui.registry.addButton("custom", {
                     //         text: "Custom pick",
