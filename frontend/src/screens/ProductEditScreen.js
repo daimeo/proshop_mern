@@ -50,11 +50,11 @@ const ProductEditScreen = () => {
     const [selectedFile, setSelectedFile] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
     const [isSuccess, setIsSuccess] = useState("");
-    const [url, setURL] = useState("");
-    const [maxFileSize, setMaxFileSize] = useState("");
-    const [base64MaxFileSize, setBase64MaxFileSize] = useState("");
-    const [virusTotalURL, setVirusTotalURL] = useState("");
-    const [virusTotalAPIKey, setVirusTotalAPIKey] = useState("");
+    // const [url, setURL] = useState("");
+    // const [maxFileSize, setMaxFileSize] = useState("");
+    // const [base64MaxFileSize, setBase64MaxFileSize] = useState("");
+    // const [virusTotalURL, setVirusTotalURL] = useState("");
+    // const [virusTotalAPIKey, setVirusTotalAPIKey] = useState("");
     const [generalResult, setGeneralResult] = useState("");
     const [detailResult, setDetailResult] = useState("");
 
@@ -107,25 +107,29 @@ const ProductEditScreen = () => {
             navigate("/admin/productlist");
         } else {
             // IIFE
-            if (
-                url === "" ||
-                maxFileSize === "" ||
-                base64MaxFileSize === "" ||
-                virusTotalURL === "" ||
-                virusTotalAPIKey === ""
-            ) {
-                (async () => {
-                    const { data } = await axios.get("/api/config");
-                    setURL(data.url);
-                    setMaxFileSize(data.maxFileSize);
-                    setBase64MaxFileSize(data.base64MaxFileSize);
-                    setVirusTotalURL(data.virusTotalURL);
-                    setVirusTotalAPIKey(data.virusTotalAPIKey);
-                })();
-            }
+            // if (
+            // url === "" ||
+            // maxFileSize === "" ||
+            // base64MaxFileSize === "" ||
+            // virusTotalURL === "" ||
+            // virusTotalAPIKey === ""
+            // ) {
+            //     (async () => {
+            //         const { data } = await axios.get("/api/config");
+            // setURL(data.url);
+            // setMaxFileSize(data.maxFileSize);
+            // setBase64MaxFileSize(data.base64MaxFileSize);
+            // setVirusTotalURL(data.virusTotalURL);
+            // setVirusTotalAPIKey(data.virusTotalAPIKey);
+            // })();
+            // }
 
             if (Object.keys(config).length === 0) {
                 axios.get("/api/config").then((response) => {
+                    // console.log(
+                    //     "RESPONSE DATA CONFIG: " +
+                    //         JSON.stringify(response.data, null, 2)
+                    // );
                     setConfig(response.data);
                 });
             }
@@ -156,11 +160,13 @@ const ProductEditScreen = () => {
         product,
         successUpdate,
         userInfo,
-        base64MaxFileSize,
-        maxFileSize,
-        url,
-        virusTotalAPIKey,
-        virusTotalURL,
+        // base64MaxFileSize,
+        // maxFileSize,
+        // url,
+        // virusTotalAPIKey,
+        // virusTotalURL,
+        config,
+        setConfig,
     ]);
 
     const purifyContent = async (content) => {
@@ -181,7 +187,7 @@ const ProductEditScreen = () => {
         Check for Analysis Report from the self link for status complete
         If not recall after a set delay
      */
-    const checkResult = async (
+    const checkResultGeneral = async (
         analysesLink,
         getResultOptions,
         scanResult,
@@ -230,30 +236,40 @@ const ProductEditScreen = () => {
         return isResultReady;
     };
 
-    /*
-        Get URL Analysis Report from Scan URL using stripped ID
-        This link will have more information but need to wait longer
-     */
-    const getURLAnalysisReport = async (
-        shortScanID,
-        options,
+    const checkResultDetail = async (
+        analysesLink,
+        getResultOptions,
         scanResult,
         link
     ) => {
-        const result = await axios.get(
-            `${virusTotalURL}/${shortScanID}`,
-            options
-        );
-        if (
-            result &&
-            result.data &&
-            result.data.data &&
-            result.data.data.attributes
-        ) {
-            scanResult = await result.data.data.attributes.last_analysis_stats;
-            setScanResultGeneral(scanResult);
-            setIsGettingResultGeneral(false);
-            console.log("SCAN RESULT: " + JSON.stringify(result, null, 2));
+        let isResultReady = false;
+        const result = await axios.get(analysesLink, getResultOptions);
+        const status = result.data.data.attributes.status;
+        console.log("LINK DETAIL: " + link);
+        console.log("STATUS DETAIL: " + status);
+
+        if (status && status === "completed") {
+            // return result.data.data.attributes.stats;
+
+            scanResult = await result.data.data.attributes.stats;
+            setScanResultDetail(scanResult);
+            setIsGettingResultDetail(false);
+
+            if (scanResult && scanResult.malicious > 0) {
+                if (badLinksDetail && !badLinksDetail.includes(link)) {
+                    await setBadLinksDetail((prevBadLinks) => [
+                        ...prevBadLinks,
+                        link,
+                    ]);
+                }
+            } else {
+                if (goodLinksDetail && !goodLinksDetail.includes(link)) {
+                    await setGoodLinksDetail((prevGoodLinks) => [
+                        ...prevGoodLinks,
+                        link,
+                    ]);
+                }
+            }
 
             // // Add scanned links to Set
             // await setScannedLinks(
@@ -261,23 +277,63 @@ const ProductEditScreen = () => {
             //         new Set(prevScannedLinks.add(link.toString()))
             // );
 
-            if (scanResult && scanResult.malicious > 0) {
-                if (badLinksGeneral && !badLinksGeneral.includes(link)) {
-                    await setBadLinksGeneral((prevBadLinks) => [
-                        ...prevBadLinks,
-                        link,
-                    ]);
-                }
-            } else {
-                if (goodLinksGeneral && !goodLinksGeneral.includes(link)) {
-                    await setGoodLinksGeneral((prevGoodLinks) => [
-                        ...prevGoodLinks,
-                        link,
-                    ]);
-                }
-            }
-        } else console.error("Error fetching scan result");
+            isResultReady = true;
+        } else {
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+        }
+
+        return isResultReady;
     };
+
+    /*
+        Get URL Analysis Report from Scan URL using stripped ID
+        This link will have more information but need to wait longer
+        This function served as a backup for the checkResult function
+     */
+    // const getURLAnalysisReport = async (
+    //     shortScanID,
+    //     options,
+    //     scanResult,
+    //     link
+    // ) => {
+    //     const result = await axios.get(
+    //         `${config.virusTotalURL}/${shortScanID}`,
+    //         options
+    //     );
+    //     if (
+    //         result &&
+    //         result.data &&
+    //         result.data.data &&
+    //         result.data.data.attributes
+    //     ) {
+    //         scanResult = await result.data.data.attributes.last_analysis_stats;
+    //         setScanResultGeneral(scanResult);
+    //         setIsGettingResultGeneral(false);
+    //         console.log("SCAN RESULT: " + JSON.stringify(result, null, 2));
+    //
+    //         // // Add scanned links to Set
+    //         // await setScannedLinks(
+    //         //     (prevScannedLinks) =>
+    //         //         new Set(prevScannedLinks.add(link.toString()))
+    //         // );
+    //
+    //         if (scanResult && scanResult.malicious > 0) {
+    //             if (badLinksGeneral && !badLinksGeneral.includes(link)) {
+    //                 await setBadLinksGeneral((prevBadLinks) => [
+    //                     ...prevBadLinks,
+    //                     link,
+    //                 ]);
+    //             }
+    //         } else {
+    //             if (goodLinksGeneral && !goodLinksGeneral.includes(link)) {
+    //                 await setGoodLinksGeneral((prevGoodLinks) => [
+    //                     ...prevGoodLinks,
+    //                     link,
+    //                 ]);
+    //             }
+    //         }
+    //     } else console.error("Error fetching scan result");
+    // };
 
     const verifyURLsGeneral = async (linksG) => {
         /*
@@ -301,7 +357,11 @@ const ProductEditScreen = () => {
         if (linksG.toString() !== "") {
             for (const link of linksG) {
                 if (scannedLinks.has(link) || generalResult.includes(link)) {
-                    // Skip link if already scanned (past and future)
+                    /*
+                        continue is used inside a loop to skip the current iteration and move to the next one.
+                        It can be used with for, while, and do-while loops.
+                        In this case it is used to skip a link if it's already scanned in the past and future
+                     */
                     continue;
                 }
 
@@ -313,10 +373,10 @@ const ProductEditScreen = () => {
 
                 const sendRequestOptions = {
                     method: "POST",
-                    url: virusTotalURL,
+                    url: config.virusTotalURL,
                     headers: {
                         accept: "application/json",
-                        "x-apikey": virusTotalAPIKey,
+                        "x-apikey": config.virusTotalAPIKey,
                         "Content-Type": "application/x-www-form-urlencoded",
                     },
                     data: new URLSearchParams({
@@ -353,7 +413,7 @@ const ProductEditScreen = () => {
                         method: "GET",
                         headers: {
                             accept: "application/json",
-                            "x-apikey": virusTotalAPIKey,
+                            "x-apikey": config.virusTotalAPIKey,
                             "Content-Type": "application/json",
                         },
                     };
@@ -419,7 +479,7 @@ const ProductEditScreen = () => {
                         //     );
                         // }
                          */
-                        isResultReady = await checkResult(
+                        isResultReady = await checkResultGeneral(
                             analysesLink,
                             getResultOptions,
                             scanResult,
@@ -473,7 +533,7 @@ const ProductEditScreen = () => {
     //         method: "POST",
     //         headers: {
     //             accept: "application/json",
-    //             "x-apikey": virusTotalAPIKey,
+    //             "x-apikey": config.virusTotalAPIKey,
     //             "Content-Type": "application/x-www-form-urlencoded",
     //         },
     //         body: new URLSearchParams({
@@ -496,7 +556,7 @@ const ProductEditScreen = () => {
     //                 method: "GET",
     //                 headers: {
     //                     accept: "application/json",
-    //                     "x-apikey": virusTotalAPIKey,
+    //                     "x-apikey": config.virusTotalAPIKey,
     //                 },
     //             };
     //
@@ -551,16 +611,12 @@ const ProductEditScreen = () => {
                 ? (60 * 1000) / MAX_REQUESTS_PER_MINUTE
                 : 1;
 
-        let scanID = "";
+        // let fullScanID = "";
+        let shortScanID = "";
+        let analysesLink = "";
         let scanResult = "";
-        let badLink = undefined;
 
         setIsSendingURLDetail(true);
-
-        // console.log("LINKS G TYPE: " + typeof linksG);
-        // console.log("Scanned Links TYPE: " + typeof scannedLinks);
-        // console.log("generalResult TYPE: " + typeof generalResult);
-        // console.log("generalResult: " + generalResult);
 
         if (linksD.toString() !== "") {
             for (const link of linksD) {
@@ -569,92 +625,140 @@ const ProductEditScreen = () => {
                     continue;
                 }
 
-                const options = {
+                // Add scanned links to Set
+                await setScannedLinks(
+                    (prevScannedLinks) =>
+                        new Set(prevScannedLinks.add(link.toString()))
+                );
+
+                const sendRequestOptions = {
                     method: "POST",
-                    url: virusTotalURL,
+                    url: config.virusTotalURL,
                     headers: {
                         accept: "application/json",
-                        "x-apikey": virusTotalAPIKey,
+                        "x-apikey": config.virusTotalAPIKey,
                         "Content-Type": "application/x-www-form-urlencoded",
                     },
                     data: new URLSearchParams({
-                        url: link.toString() !== "" ? link.toString() : "",
+                        url: link && link.toString(),
                     }),
                 };
 
                 try {
                     // Sending URL to Virus Total API
-                    await axios.request(options).then(async (response) => {
-                        console.log(
-                            "SEND REPORT ID: " +
-                                response.data.data.id.split("-")[1]
-                        );
+                    const sendRequest = await axios.request(sendRequestOptions);
+                    // console.log(
+                    //     "sendRequest: " + JSON.stringify(sendRequest, null, 2)
+                    // );
+                    console.log("SEND REPORT ID: " + sendRequest.data.data.id);
+                    console.log(
+                        "RESPONSE SELF LINK: " +
+                            JSON.stringify(
+                                sendRequest.data.data.links.self,
+                                null,
+                                2
+                            )
+                    );
 
-                        scanID = await response.data.data.id.split("-")[1];
-                        setScanIDDetail(scanID);
-                        setIsSendingURLDetail(false);
+                    // fullScanID = await response.data.data.id;
+                    shortScanID = await sendRequest.data.data.id.split("-")[1];
+                    analysesLink = await sendRequest.data.data.links.self;
+                    setScanIDDetail(shortScanID);
+                    setIsSendingURLDetail(false);
 
-                        // Get Report from scanID
-                        setIsGettingResultDetail(true);
+                    // Get Report from scanID
+                    setIsGettingResultDetail(true);
 
-                        const options = {
-                            method: "GET",
-                            headers: {
-                                accept: "application/json",
-                                "x-apikey": virusTotalAPIKey,
-                                "Content-Type": "application/json",
-                            },
-                        };
+                    const getResultOptions = {
+                        method: "GET",
+                        headers: {
+                            accept: "application/json",
+                            "x-apikey": config.virusTotalAPIKey,
+                            "Content-Type": "application/json",
+                        },
+                    };
 
-                        const result = await axios.get(
-                            `${virusTotalURL}/${scanID}`,
-                            options
-                        );
-                        scanResult = await result.data.data.attributes
-                            .last_analysis_stats;
-                        setScanResultDetail(scanResult);
-                        setIsGettingResultDetail(false);
+                    let isResultReady = false;
 
-                        // // Add scanned links to Set
-                        // setScannedLinks(
-                        //     (prevScannedLinks) =>
-                        //         new Set(prevScannedLinks.add(link))
+                    while (!isResultReady) {
+                        /*
+                        // const result = await axios.get(
+                        //     analysesLink,
+                        //     getResultOptions
                         // );
-                        // if (!scannedLinks.includes(link)) {
-                        //     setScannedLinks((prevScannedLinks) => [
-                        //         ...prevScannedLinks,
-                        //         link,
-                        //     ]);
+                        // const status = result.data.data.attributes.status;
+                        // console.log("LINK: " + link);
+                        // console.log("STATUS: " + status);
+                        //
+                        // if (status && status === "completed") {
+                        //     // return result.data.data.attributes.stats;
+                        //
+                        //     scanResult = await result.data.data.attributes
+                        //         .stats;
+                        //     setScanResultDetail(scanResult);
+                        //     setIsGettingResultDetail(false);
+                        //
+                        //     if (scanResult && scanResult.malicious > 0) {
+                        //         if (
+                        //             badLinksDetail &&
+                        //             !badLinksDetail.includes(link)
+                        //         ) {
+                        //             await setBadLinksDetail((prevBadLinks) => [
+                        //                 ...prevBadLinks,
+                        //                 link,
+                        //             ]);
+                        //         }
+                        //     } else {
+                        //         if (
+                        //             goodLinksDetail &&
+                        //             !goodLinksDetail.includes(link)
+                        //         ) {
+                        //             await setGoodLinksDetail(
+                        //                 (prevGoodLinks) => [
+                        //                     ...prevGoodLinks,
+                        //                     link,
+                        //                 ]
+                        //             );
+                        //         }
+                        //     }
+                        //
+                        //     // Add scanned links to Set
+                        //     await setScannedLinks(
+                        //         (prevScannedLinks) =>
+                        //             new Set(
+                        //                 prevScannedLinks.add(link.toString())
+                        //             )
+                        //     );
+                        //
+                        //     isResultReady = true;
+                        //
+                        //     // return true;
+                        // } else {
+                        //     await new Promise((resolve) =>
+                        //         setTimeout(resolve, 5000)
+                        //     );
                         // }
+                         */
+                        isResultReady = await checkResultDetail(
+                            analysesLink,
+                            getResultOptions,
+                            scanResult,
+                            link
+                        );
+                    }
 
-                        // Verify result
-                        // setIsVerifyReport(true);
-                        if (scanResult && scanResult.malicious > 0) {
-                            badLink = true;
-                            // console.log("Link BAD");
-                            // setIsBadLinkDetail(true);
-                            // setIsVerifyReport(false);
-                            // Push new bad link to setBadLinksDetail state
-                            if (!badLinksDetail.includes(link)) {
-                                setBadLinksDetail((prevBadLinks) => [
-                                    ...prevBadLinks,
-                                    link,
-                                ]);
-                            }
-                        } else {
-                            badLink = false;
-                            // console.log("Link OK");
-                            // setIsBadLinkDetail(false);
-                            // setIsVerifyReport(false);
-                            // Push new good link to setGoodLinksDetail state
-                            if (!goodLinksDetail.includes(link)) {
-                                setGoodLinksDetail((prevGoodLinks) => [
-                                    ...prevGoodLinks,
-                                    link,
-                                ]);
-                            }
-                        }
-                    });
+                    // Wait for 5 seconds before getting the scan result
+                    // const delay = (ms) =>
+                    //     new Promise((resolve) => setTimeout(resolve, ms));
+                    // await delay(2000);
+
+                    // await getURLAnalysisReport(
+                    //     shortScanID,
+                    //     options,
+                    //     scanResult,
+                    //     link
+                    // );
+                    // });
 
                     // Wait before next request
                     await new Promise((resolve) =>
@@ -662,13 +766,19 @@ const ProductEditScreen = () => {
                     );
                 } catch (error) {
                     console.error(error);
+
+                    // Remove the link from scannedLinks set if error
+                    await setScannedLinks((prevScannedLinks) => {
+                        const newScannedLinks = new Set(prevScannedLinks);
+                        newScannedLinks.delete(link);
+                        return newScannedLinks;
+                    });
+
                     setIsSendingURLDetail(false);
                     setIsGettingResultDetail(false);
                 }
             }
         } else console.log("no linksD");
-        // console.log("badLink Return: " + badLink);
-        return badLink;
     };
 
     const editorChangeHandler = async () => {
@@ -821,6 +931,28 @@ const ProductEditScreen = () => {
 
         input.addEventListener("change", (e) => {
             const file = e.target.files[0];
+            const minSize = 0; // 0 Byte
+            const base64MaxSize = 1024 * 1024 * config.base64MaxFileSize; // 5MB
+
+            /*
+                `file.size` is a property of the File object and returns the size of the file in bytes.
+                Which can be accessed in the client-side browser to check the size of a file before it's submitted to the server.
+
+                `.blob().size` is a method of the Response object that is returned by the fetch API when making HTTP requests.
+                It returns the size of the data in the response body in bytes.
+                Which can be used on the server-side to check the size of a file after it has been submitted to the server.
+             */
+            if (file && file.size <= minSize) {
+                alert("File size must be greater than 0 Byte.");
+                return;
+            }
+
+            if (file && file.size > base64MaxSize) {
+                alert(
+                    `File size exceeds the maximum limit of ${config.base64MaxFileSize} MB.`
+                );
+                return;
+            }
 
             const reader = new FileReader();
             reader.addEventListener("load", () => {
@@ -897,8 +1029,8 @@ const ProductEditScreen = () => {
 
     const validateFileSize = async (event) => {
         const minSize = 0; // 1MB
-        const base64MaxSize = 1024 * 1024 * base64MaxFileSize; // 5MB
-        const maxSize = 1024 * 1024 * maxFileSize; // 10MB
+        const base64MaxSize = 1024 * 1024 * config.base64MaxFileSize; // 5MB
+        const maxSize = 1024 * 1024 * config.maxFileSize; // 10MB
         // console.log(
         //     "MaxSize 10MB: " +
         //         maxSize +
@@ -1196,14 +1328,26 @@ const ProductEditScreen = () => {
                                 className={"my-3"}
                             >
                                 <Form.Label>Product General</Form.Label>
-                                <TinyMCE
-                                    url={url}
-                                    editorRef={generalRef}
-                                    content={product.general && generalResult}
-                                    file_picker_callback={file_picker_callback}
-                                    // log={setEditorContent}
-                                    editorChangeHandler={editorChangeHandler}
-                                />
+                                {/*
+                                    Must check for `config.url` before rendering TinyMCE
+                                    else the `url` will return undefined and errors will occur
+                                */}
+                                {config.url && (
+                                    <TinyMCE
+                                        url={config.url}
+                                        editorRef={generalRef}
+                                        content={
+                                            product.general && generalResult
+                                        }
+                                        file_picker_callback={
+                                            file_picker_callback
+                                        }
+                                        // log={setEditorContent}
+                                        editorChangeHandler={
+                                            editorChangeHandler
+                                        }
+                                    />
+                                )}
                             </Form.Group>
                         </div>
                         {/*Virus Total*/}
@@ -1345,14 +1489,20 @@ const ProductEditScreen = () => {
                                 className={"my-3"}
                             >
                                 <Form.Label>Product Detail</Form.Label>
-                                <TinyMCE
-                                    url={url}
-                                    editorRef={detailRef}
-                                    content={product.detail && detailResult}
-                                    file_picker_callback={file_picker_callback}
-                                    // log={setEditorContent}
-                                    editorChangeHandler={editorChangeHandler}
-                                />
+                                {config.url && (
+                                    <TinyMCE
+                                        url={config.url}
+                                        editorRef={detailRef}
+                                        content={product.detail && detailResult}
+                                        file_picker_callback={
+                                            file_picker_callback
+                                        }
+                                        // log={setEditorContent}
+                                        editorChangeHandler={
+                                            editorChangeHandler
+                                        }
+                                    />
+                                )}
                             </Form.Group>
                         </div>
                         <div className={"mb-3"}>
