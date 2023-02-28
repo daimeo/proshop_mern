@@ -1,10 +1,18 @@
 steps:
+  # Install dependencies with npm install in Frontend
+  - name: 'node:18.12.1'
+    entrypoint: npm
+    args: [ 'install' ] # Single line array
+    dir: 'frontend'
+  # Install dependencies with npm install in Backend
   - name: 'node:18.12.1'
     entrypoint: npm
     args: ['install'] # Single line array
+    dir: 'backend'
   - name: 'node:18.12.1'
     entrypoint: node
     args: ['frontend/postinstall.js']
+    dir: 'backend'
   - name: 'node:18.12.1'
     entrypoint: npm
     args: # Multiple lines array

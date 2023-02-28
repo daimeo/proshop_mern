@@ -10,10 +10,10 @@ node_modules/
 /coverage
 
 # production
-frontend/build
+/frontend/build
 
 # TinyMCE
-#frontend/public/tinymce/
+/frontend/public/tinymce
 
 # misc
 .DS_Store

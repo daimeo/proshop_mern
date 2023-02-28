@@ -11,6 +11,7 @@
         "dev": "concurrently \"npm run server\" \"npm run client\"",
         "data:import": "node backend/seeder",
         "data:destroy": "node backend/seeder -d",
+        "postinstall": "node frontend/postinstall.js",
         "deploy": "gcloud app deploy",
         "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix frontend && npm run build --prefix frontend",
         "pretty": "prettier --tab-width 4 --write \"**/*.{js,jsx,json,ts,html,css}\""
