@@ -9,19 +9,29 @@ steps:
     entrypoint: npm
     args: ['install'] # Single line array
     dir: 'backend'
+#  - name: 'node:18.12.1'
+#    entrypoint: node
+#    args: ['frontend/postinstall.js']
+#    dir: 'backend'
+  # Run post-install script declared in Backend package.json
   - name: 'node:18.12.1'
-    entrypoint: node
-    args: ['frontend/postinstall.js']
+    entrypoint: npm
+    args: # Multiple lines array
+      - 'run'
+      - 'postinstall'
     dir: 'backend'
+  # Build Frontend react app
   - name: 'node:18.12.1'
     entrypoint: npm
     args: # Multiple lines array
       - 'run'
       - 'build'
+    dir: 'frontend'
+  # Deploy to Google App Engine
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - 'app'
       - 'deploy'
       - '--project=test-deploy-express-react-app'
       - '--quite'
-  - name: 'node'
+    dir: 'backend' # Set working directory to the backend directory where app.yaml is located
