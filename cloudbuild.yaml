@@ -11,5 +11,5 @@ steps:
     args:
       - 'app'
       - 'deploy'
-      - '--quite'
       - '--project=test-deploy-express-react-app'
+      - '--quite'
