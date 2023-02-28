@@ -1,0 +1,14 @@
+steps:
+  - name: 'node:18.12.1'
+    entrypoint: npm
+    args: ['install'] # Single line array
+  - name: 'node:18.12.1'
+    entrypoint: npm
+    args: # Multiple lines array
+      - 'run'
+      - 'build'
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'app'
+      - 'deploy'
+      - '--quite'
