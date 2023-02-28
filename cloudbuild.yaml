@@ -8,7 +8,7 @@ steps:
   - name: 'node:18.12.1'
     entrypoint: npm
     args: ['install'] # Single line array
-    dir: 'backend'
+#    dir: 'backend'
 #  - name: 'node:18.12.1'
 #    entrypoint: node
 #    args: ['frontend/postinstall.js']
@@ -19,7 +19,7 @@ steps:
     args: # Multiple lines array
       - 'run'
       - 'postinstall'
-    dir: 'backend'
+#    dir: 'backend'
   # Build Frontend react app
   - name: 'node:18.12.1'
     entrypoint: npm
@@ -34,4 +34,5 @@ steps:
       - 'deploy'
       - '--project=test-deploy-express-react-app'
       - '--quiet' # Suppresses all interactive prompts and outputs only errors and important messages
-#    dir: 'backend' # Set working directory to the backend directory where app.yaml is located
+#   dir: 'backend' # Set working directory to the backend directory where app.yaml is located
+    dir: '/'
