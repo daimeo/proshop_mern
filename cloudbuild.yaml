@@ -35,4 +35,4 @@ steps:
       - '--project=test-deploy-express-react-app'
       - '--quiet' # Suppresses all interactive prompts and outputs only errors and important messages
 #   dir: 'backend' # Set working directory to the backend directory where app.yaml is located
-    dir: '.'
+    dir: '.' # Set the root of the repo where the app.yaml is located
