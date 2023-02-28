@@ -83,6 +83,17 @@ npm run build
 ```
 
 There is a Heroku postbuild script, so if you push to Heroku, no need to build manually for deployment to Heroku
+ 
+### Deploy to Google Cloud App Engine from Google Source Repo using Google Cloud Build
+1. Create Google Cloud Source Repository
+2. Grant the necessary permissions the Cloud Build service account (The permission to 'fetch' the application, and the permission to 'deploy' the application)
+3. Config the cloudbuild.yaml
+4. Config the app.yaml
+   - Create a Secret on Google Cloud Console 'Secrets Manager' if necessary
+5. Create trigger and the project want to use Cloud Build
+6. Add the GCS Repo to your current project if it's exist using: `git remote add google <GCSR_REPO_URL>`
+   - To get your GCS Repo URL use this command: `gcloud source repos describe <REPO_NAME> --format="value(url)"`
+7. Push the project to GCS Repo using: `git push google master`
 
 ### Seed Database
 
