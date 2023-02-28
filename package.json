@@ -12,7 +12,6 @@
         "data:import": "node backend/seeder",
         "data:destroy": "node backend/seeder -d",
         "deploy": "gcloud app deploy",
-        "postinstall": "node frontend/postinstall.js",
         "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix frontend && npm run build --prefix frontend",
         "pretty": "prettier --tab-width 4 --write \"**/*.{js,jsx,json,ts,html,css}\""
     },
