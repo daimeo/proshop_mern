@@ -1,0 +1,14 @@
+runtime: nodejs18
+
+env_variables:
+  INCLUDE_CONFIG_FILE: "env_variables.yaml"
+
+handlers:
+  - url: /.*
+    script: auto
+    secure: always
+  - url: /
+    static_files: build/index.html
+    upload: build/index.html
+  - url: /
+    static_dir: build

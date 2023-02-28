@@ -1,0 +1,12 @@
+bindings:
+  - members:
+      - user:testersaigonbpo@gmail.com
+      - domain:google.com
+      - serviceAccount:my-project-id@appspot.gserviceaccount.com
+    role: roles/
+    condition:
+      title: expirable access
+      description: Does not grant access after Feb 2023
+      expression: request.time < timestamp('2023-03-01T00:00:00.000Z')
+etag: BwWWja0YfJA=
+version: 1

@@ -40,6 +40,9 @@ console.log(Base64.toUint8Array("ZGFua29nYWk=")); // u8s above
 console.log(Base64.decode("5bCP6aO85by+")); // 小飼弾
 // note .decodeURI() is unnecessary since it accepts both flavors
 console.log(Base64.decode("5bCP6aO85by-")); // 小飼弾
+console.log("MY STRING: " + Base64.decode("BwWWja0YfJA="));
+console.log("MY STRING: " + Base64.atob("BwWWja0YfJA="));
+console.log("MY STRING: " + Base64.toUint8Array("BwWWja0YfJA="));
 //
 // Base64.isValid(0); // false: 0 is not string
 // Base64.isValid(""); // true: a valid Base64-encoded empty byte

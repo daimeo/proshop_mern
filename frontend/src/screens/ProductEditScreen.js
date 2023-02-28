@@ -831,7 +831,7 @@ const ProductEditScreen = () => {
             }
 
             if (Object.keys(linksG).length === 0) {
-                setLinksGeneral([]);
+                setLinksGeneral({});
                 setScanIDGeneral({});
                 setScanResultGeneral({});
                 // setBadLinkGeneral(false);
@@ -858,7 +858,7 @@ const ProductEditScreen = () => {
                 await verifyURLsDetail(linksD);
             }
             if (Object.keys(linksD).length === 0) {
-                setLinksDetail([]);
+                setLinksDetail({});
                 setScanIDDetail({});
                 setScanResultDetail({});
                 // setBadLinkDetail(false);
@@ -917,9 +917,9 @@ const ProductEditScreen = () => {
     };
 
     const showLinkD = () => {
-        console.log("TYPE OF LINKs GENERAL: " + typeof linksDetail);
-        console.log(linksDetail);
-        console.log(linksDetail.length);
+        // console.log("TYPE OF LINKs GENERAL: " + typeof linksDetail);
+        // console.log(linksDetail);
+        // console.log(linksDetail.length);
 
         console.log(typeof scanResultDetail);
         console.log(scanResultDetail);
