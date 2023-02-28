@@ -60,7 +60,6 @@ const ProductEditScreen = () => {
     const [detailResult, setDetailResult] = useState("");
 
     // TinyMCE
-    // const [content, setContent] = useState("");
     const [linksGeneral, setLinksGeneral] = useState({});
     const [linksDetail, setLinksDetail] = useState({});
     const [totalLinksG, setTotalLinksG] = useState("");

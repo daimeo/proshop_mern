@@ -12,3 +12,4 @@ steps:
       - 'app'
       - 'deploy'
       - '--quite'
+      - '--project=test-deploy-express-react-app'
