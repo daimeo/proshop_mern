@@ -7,9 +7,11 @@ steps:
     args: # Multiple lines array
       - 'run'
       - 'build'
+      - 'node frontend/postinstall.js'
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - 'app'
       - 'deploy'
       - '--project=test-deploy-express-react-app'
       - '--quite'
+  - name: 'node'
