@@ -3,11 +3,13 @@ steps:
     entrypoint: npm
     args: ['install'] # Single line array
   - name: 'node:18.12.1'
+    entrypoint: node
+    args: ['frontend/postinstall.js']
+  - name: 'node:18.12.1'
     entrypoint: npm
     args: # Multiple lines array
       - 'run'
       - 'build'
-      - 'node frontend/postinstall.js'
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - 'app'
