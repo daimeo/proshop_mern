@@ -36,3 +36,6 @@ steps:
       - '--quiet' # Suppresses all interactive prompts and outputs only errors and important messages
 #   dir: 'backend' # Set working directory to the backend directory where app.yaml is located
     dir: '.' # Set the root of the repo where the app.yaml is located
+logsBucket: 'gs://test-deploy-express-react-app.appspot.com'
+options:
+  logging: GCS_ONLY
