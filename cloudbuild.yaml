@@ -9,16 +9,16 @@ steps:
     entrypoint: npm
     args: ['install'] # Single line array
 #    dir: 'backend'
-#  - name: 'node:18.12.1'
-#    entrypoint: node
-#    args: ['frontend/postinstall.js']
-#    dir: 'backend'
-  # Run post-install script declared in Backend package.json
   - name: 'node:18.12.1'
-    entrypoint: npm
-    args: # Multiple lines array
-      - 'run'
-      - 'postinstall'
+    entrypoint: node
+    args: ['frontend/postinstall.js']
+    dir: '.'
+  # Run post-install script declared in Backend package.json
+#  - name: 'node:18.12.1'
+#    entrypoint: npm
+#    args: # Multiple lines array
+#      - 'run'
+#      - 'postinstall'
 #    dir: 'backend'
   # Build Frontend react app
   - name: 'node:18.12.1'
