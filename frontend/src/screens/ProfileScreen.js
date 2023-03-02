@@ -21,7 +21,6 @@ const ProfileScreen = () => {
     const [message, setMessage] = useState("");
 
     const dispatch = useDispatch();
-    // const location = useLocation();
     const navigate = useNavigate();
 
     const userDetails = useSelector((state) => state.userDetails);
@@ -43,10 +42,8 @@ const ProfileScreen = () => {
     const orderDetails = useSelector((state) => state.orderDetails);
     const { order } = orderDetails;
 
-    // console.log("ORDER: " + JSON.stringify(order._id));
 
     useEffect(() => {
-        // console.log(JSON.stringify(successOrders));
         if (!userInfo) {
             navigate("/login");
         } else {
@@ -64,9 +61,6 @@ const ProfileScreen = () => {
             dispatch(listMyOrders());
         }
 
-        // if (order.orderStatus === "New") {
-        //     setDisabled(false);
-        // }
     }, [dispatch, navigate, userInfo, user, success, order, successCancel]);
 
     const submitHandler = (e) => {
@@ -86,88 +80,14 @@ const ProfileScreen = () => {
 
     const cancelOrderHandler = (id) => {
         if (window.confirm("Are you sure?")) {
-            // console.log("cancelOrderHandler ID: " + order._id);
-            // console.log("cancelOrderHandler is running...");
-            const now = moment().format("DD/MM/YYYY HH:mm:ss");
-            const now1 = moment()
-                .tz("Asia/Tokyo")
-                .format("DD/MM/YYYY HH:mm:ss");
-            const now2 = new Date();
-            const now3 = DateTime.now().setZone("Asia/Ho_Chi_Minh").toJSDate();
             const now4 = DateTime.now().toString();
-            // .minus({ weeks: 1 })
-            // .endOf("day")
-            // .toFormat("dd/MM/yyyy HH:mm:ss");
-            // .toISO();
-            console.log(
-                new Intl.DateTimeFormat("vi-VN", {
-                    dateStyle: "short",
-                    timeStyle: "medium",
-                    timeZone: "Asia/Ho_Chi_Minh",
-                }).format(now2)
-            );
-            console.log(now);
-            console.log(now1);
-            console.log(now3);
-            console.log("NOW4: " + now4);
-
-            const now5 = new Date().toLocaleString("vi-VN", {
-                timeZone: "Asia/Ho_Chi_Minh",
-            });
-
-            console.log("NOW 5: " + now5);
-
-            const now6 = new Date();
-
-            function createDateAsUTC(date) {
-                return new Date(
-                    Date.UTC(
-                        date.getFullYear(),
-                        date.getMonth(),
-                        date.getDate(),
-                        date.getHours(),
-                        date.getMinutes(),
-                        date.getSeconds()
-                    )
-                );
-            }
-
-            console.log("NOW6 " + createDateAsUTC(now6));
-
-            console.log(
-                "NOW6 GET UTC: " +
-                    new Date(
-                        now6.getUTCFullYear(),
-                        now6.getUTCMonth(),
-                        now6.getUTCDate(),
-                        now6.getUTCHours(),
-                        now6.getUTCMinutes(),
-                        now6.getUTCSeconds()
-                    )
-            );
 
             dispatch(cancelOrder(id, "Canceled", now4));
-            // console.log("AFTER setUpdate: " + update);
-            // console.log(
-            //     "ORDER ID in Profile Screen after dispatch: " +
-            //         JSON.stringify(id)
-            // );
-            // console.log(
-            //     "ORDER in Profile Screen after dispatch: " +
-            //         JSON.stringify(orders)
-            // );
         }
     };
 
-    // const deleteHandler = (id) => {
-    //     if (window.confirm("Are you sure?")) {
-    //         dispatch(deleteOrder(id));
-    //     }
-    // };
-
     return (
         <>
-            {/*<Breadcrumbs />*/}
             <Button type={"button"} variant={"light"} onClick={() => goBack()}>
                 Go Back
             </Button>
@@ -345,20 +265,6 @@ const ProfileScreen = () => {
                                                         Details
                                                     </Button>
                                                 </LinkContainer>
-                                                {/*<Button*/}
-                                                {/*    variant="danger"*/}
-                                                {/*    className="btn-sm mx-2"*/}
-                                                {/*    onClick={() =>*/}
-                                                {/*        deleteHandler(order._id)*/}
-                                                {/*    }*/}
-                                                {/*>*/}
-                                                {/*    <i*/}
-                                                {/*        className="fa-regular fa-trash-can"*/}
-                                                {/*        // style={{*/}
-                                                {/*        //     color: "red",*/}
-                                                {/*        // }}*/}
-                                                {/*    ></i>*/}
-                                                {/*</Button>*/}
                                                 <Button
                                                     className="btn-sm mx-2"
                                                     variant="light"
@@ -380,7 +286,6 @@ const ProfileScreen = () => {
                                                     ></i>{" "}
                                                     Cancel
                                                 </Button>
-                                                {/*)}*/}
                                             </div>
                                         </td>
                                     </tr>

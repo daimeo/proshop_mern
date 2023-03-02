@@ -21,7 +21,6 @@ import {
 } from "../actions/productActions";
 import { PRODUCT_CREATE_REVIEW_RESET } from "../constants/productConstants";
 import parse from "html-react-parser";
-// import Breadcrumbs from "../components/Breadcrumbs";
 
 const ProductScreen = () => {
     const [qty, setQty] = useState(1);
@@ -61,8 +60,6 @@ const ProductScreen = () => {
     }, [dispatch, id, successProductReview, product._id]);
 
     const addToCartHandler = () => {
-        // history.push(`/cart/${id}?qty=${qty}`);
-        // navigate(`/cart/${id}?qty=${qty}`);
         navigate(`/cart/${id}?qty=${qty}`);
     };
 
@@ -78,7 +75,6 @@ const ProductScreen = () => {
 
     return (
         <>
-            {/*<Breadcrumbs />*/}
             <Link className="btn btn-light my-3" to="/">
                 Go Back
             </Link>
@@ -199,19 +195,12 @@ const ProductScreen = () => {
                             defaultActiveKey={"general"}
                             activeKey={tab}
                             className={"mb-3"}
-                            // fill={true}
-                            // justify={true}
                             onSelect={(t) => setTab(t)}
                         >
                             <Tab eventKey={"general"} title={"General"}>
                                 {product.general && (
                                     <ListGroup variant={"flush"}>
                                         <ListGroup.Item className={"border-0"}>
-                                            {/*<div*/}
-                                            {/*    dangerouslySetInnerHTML={{*/}
-                                            {/*        __html: product.general,*/}
-                                            {/*    }}*/}
-                                            {/*/>*/}
                                             {parse(product.general)}
                                         </ListGroup.Item>
                                     </ListGroup>
@@ -221,11 +210,6 @@ const ProductScreen = () => {
                                 {product.detail && (
                                     <ListGroup variant={"flush"}>
                                         <ListGroup.Item className={"border-0"}>
-                                            {/*<div*/}
-                                            {/*    dangerouslySetInnerHTML={{*/}
-                                            {/*        __html: product.detail,*/}
-                                            {/*    }}*/}
-                                            {/*/>*/}
                                             {parse(product.detail)}
                                         </ListGroup.Item>
                                     </ListGroup>
@@ -240,19 +224,6 @@ const ProductScreen = () => {
                     </Row>
 
                     {/*TODO: user html-to-react https://www.npmjs.com/package/html-to-react*/}
-                    {/*<Row>*/}
-                    {/*    <div>*/}
-                    {/*        <ListGroup variant={"flush"}>*/}
-                    {/*            <ListGroup.Item className={"border-0"}>*/}
-                    {/*                <div*/}
-                    {/*                    dangerouslySetInnerHTML={{*/}
-                    {/*                        __html: product.detail,*/}
-                    {/*                    }}*/}
-                    {/*                />*/}
-                    {/*            </ListGroup.Item>*/}
-                    {/*        </ListGroup>*/}
-                    {/*    </div>*/}
-                    {/*</Row>*/}
                     <Row>
                         <Col md={6}>
                             <h2>Reviews</h2>
