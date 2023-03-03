@@ -12,7 +12,7 @@ handlers:
   - url: /
     static_files: build/index.html
     upload: build/index.html
-  - url: /
+  - url: /.*
     static_dir: build
   - url: /tinymce
     static_dir: build/tinymce

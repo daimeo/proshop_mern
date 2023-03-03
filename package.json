@@ -32,6 +32,7 @@
         "express-async-handler": "^1.2.0",
         "express-session": "^1.17.3",
         "fancy-log": "^2.0.0",
+        "firebase": "^9.17.2",
         "fs": "^0.0.1-security",
         "fs-extra": "^11.1.0",
         "gulp": "^4.0.2",
