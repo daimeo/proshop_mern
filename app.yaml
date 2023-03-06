@@ -20,8 +20,8 @@ handlers:
     - url: /frontend/build
       static_dir: /frontend/build
     - url: /
-      static_files: build/index.html
-      upload: build/index.html
+      static_files: /frontend/build/index.html
+      upload: /frontend/build/index.html
     - url: /.*
       secure: always
       #      redirect_http_response_code: 301
