@@ -83,7 +83,7 @@ const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
     console.log(
         colors.yellow.bold(
-            `Server running in ${process.env.NODE_ENV} mode on port ${PORT} at 2023-03-06, 17:37:30`
+            `Server running in ${process.env.NODE_ENV} mode on port ${PORT} at 2023-03-06, 17:53:30`
         )
     );
 });
