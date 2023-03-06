@@ -19,12 +19,10 @@ runtime: nodejs18
 handlers:
     - url: /frontend/build
       static_dir: /frontend/build
-    - url: /
-      static_files: /frontend/build/index.html
-      upload: /frontend/build/index.html
+
     - url: /.*
       secure: always
-      #      redirect_http_response_code: 301
+      redirect_http_response_code: 301
       script: auto
 #env_variables:
 #    NODE_ENV: "production"
