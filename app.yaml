@@ -22,12 +22,10 @@ env_variables:
 handlers:
     - url: /
       static_dir: frontend/build
-    - url: /
-      static_files: frontend/build/index.html
-    - url: /
-      static_dir: /upload
-    - url: /upload
-      static_dir: /upload
+      upload: upload
+    #    - url: /
+    #      static_files: frontend/build/index.html
+    #      upload: upload
 
     - url: /.*
       secure: always
