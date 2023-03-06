@@ -17,7 +17,7 @@ runtime: nodejs18
 #      static_dir: build/tinymce
 
 handlers:
-    - url: /frontend/build
+    - url: /
       static_dir: /frontend/build
 
     - url: /.*
