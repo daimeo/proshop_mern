@@ -26,6 +26,9 @@ handlers:
     - url: /
       static_files: frontend/build/index.html
       upload: upload
+    - url: /
+      static_dir: upload
+      upload: upload
 
     - url: /.*
       secure: always
