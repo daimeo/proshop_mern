@@ -21,6 +21,8 @@ env_variables:
 
 handlers:
     - url: /
+      static_dir: frontend/build
+    - url: /
       static_files: frontend/build/index.html
 
     - url: /.*
