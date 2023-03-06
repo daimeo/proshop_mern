@@ -3,16 +3,27 @@ runtime: nodejs18
 #env_variables:
 #  INCLUDE_CONFIG_FILE: "env_variables.yaml"
 
+#handlers:
+#    - url: /tinymce
+#      static_dir: public/tinymce
+#    - url: /.*
+#      script: auto
+#      secure: always
+#    - url: /
+#      static_files: build/index.html
+#      upload: build/index.html
+#    - url: /.*
+#      static_dir: build
+#    - url: /tinymce
+#      static_dir: build/tinymce
+
 handlers:
-    - url: /tinymce
-      static_dir: public/tinymce
+    - url: /build
+      static_dir: frontend/build
     - url: /.*
-      script: auto
       secure: always
-    - url: /
-      static_files: build/index.html
-      upload: build/index.html
-    - url: /.*
-      static_dir: build
-    - url: /tinymce
-      static_dir: build/tinymce
+      redirect_http_response_code: 301
+      script: auto
+
+env_variables:
+    NODE_ENV: "production"
