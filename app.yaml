@@ -1,7 +1,9 @@
 runtime: nodejs18
 env: standard
-#env_variables:
-#  INCLUDE_CONFIG_FILE: "env_variables.yaml"
+
+env_variables:
+    #  INCLUDE_CONFIG_FILE: "env_variables.yaml"
+    NODE_ENV: "production"
 
 #handlers:
 #    - url: /tinymce
@@ -19,11 +21,9 @@ env: standard
 
 handlers:
     - url: /
-      static_files: /frontend/build/index.html
+      static_files: frontend/build/index.html
 
     - url: /.*
       secure: always
       redirect_http_response_code: 301
       script: auto
-#env_variables:
-#    NODE_ENV: "production"
