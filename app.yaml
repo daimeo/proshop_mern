@@ -5,26 +5,29 @@ env_variables:
     #  INCLUDE_CONFIG_FILE: "env_variables.yaml"
     NODE_ENV: "production"
 
-handlers:
-    - url: /tinymce
-      static_dir: public/tinymce
-    - url: /.*
-      script: auto
-      secure: always
-    - url: /
-      static_files: build/index.html
-      upload: build/index.html
-    - url: /.*
-      static_dir: build
-    - url: /tinymce
-      static_dir: build/tinymce
 #handlers:
-#    - url: /
-#      static_dir: frontend/build
-#    - url: /
-#      static_files: frontend/build/index.html
-#
+#    - url: /tinymce
+#      static_dir: public/tinymce
 #    - url: /.*
-#      secure: always
-#      redirect_http_response_code: 301
 #      script: auto
+#      secure: always
+#    - url: /
+#      static_files: build/index.html
+#      upload: build/index.html
+#    - url: /.*
+#      static_dir: build
+#    - url: /tinymce
+#      static_dir: build/tinymce
+
+handlers:
+    - url: /
+      static_dir: frontend/build
+    - url: /
+      static_files: frontend/build/index.html
+    - url: /upload
+      static_dir: /upload
+
+    - url: /.*
+      secure: always
+      redirect_http_response_code: 301
+      script: auto
