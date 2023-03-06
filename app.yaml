@@ -20,12 +20,12 @@ env_variables:
 #      static_dir: build/tinymce
 
 handlers:
-    - url: /
-      static_dir: frontend/build
-      upload: upload
     #    - url: /
-    #      static_files: frontend/build/index.html
+    #      static_dir: frontend/build
     #      upload: upload
+    - url: /
+      static_files: frontend/build/index.html
+      upload: upload
 
     - url: /.*
       secure: always
