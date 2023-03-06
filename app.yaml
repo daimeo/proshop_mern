@@ -24,6 +24,8 @@ handlers:
       static_dir: frontend/build
     - url: /
       static_files: frontend/build/index.html
+    - url: /
+      static_dir: /upload
     - url: /upload
       static_dir: /upload
 
