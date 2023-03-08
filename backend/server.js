@@ -13,6 +13,10 @@ import cartRoutes from "./routes/cartRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import helmet from "helmet";
+import fs from "fs";
+import https from "https";
+// import readline from "readline";
 
 dotenv.config();
 
@@ -20,21 +24,60 @@ connectDB().then();
 
 const app = express();
 
+let options;
+
 if (process.env.NODE_ENV !== "production") {
+    // const rl = readline.createInterface({
+    //     input: process.stdin,
+    //     output: process.stdout,
+    // });
+    // rl.question(
+    //     "Please input the passphrase for private key: ",
+    //     (passphrase) => {
+    options = {
+        key: fs.readFileSync("backend/key.pem", "utf-8"),
+        cert: fs.readFileSync("backend/cert.pem", "utf8"),
+        passphrase: "TesterSGB@t3sting",
+    };
+    // }
+    // );
+    app.use(helmet());
+    // app.use((req, res, next) => {
+    //     if (req.header("x-forwarded-proto") !== "https") {
+    //         return res.redirect(`https://${req.header("host")}${req.url}`);
+    //         // } else {
+    //     }
+    //     next();
+    // });
     app.use(
         cors({
-            origin: "http://127.0.0.1:5000", //Chan tat ca cac domain khac ngoai domain nay
+            origin: "https://127.0.0.1:5000", //Chan tat ca cac domain khac ngoai domain nay
             credentials: true, //Để bật cookie HTTP qua CORS
         })
     );
 } else if (process.env.NODE_ENV === "production") {
-    app.use((req, res, next) => {
-        res.set(
-            "Strict-Transport-Security",
-            "max-age=31536000; includeSubDomains"
-        );
-        next();
-    });
+    app.use(
+        helmet({
+            hsts: {
+                maxAge: 63072000,
+                preload: true,
+            },
+        })
+    );
+    // Sets "Strict-Transport-Security: max-age=123456; includeSubDomains; preload"
+    // app.use(
+    //     helmet.hsts({
+    //         maxAge: 63072000,
+    //         preload: true,
+    //     })
+    // );
+    // app.use((req, res, next) => {
+    //     res.set(
+    //         "Strict-Transport-Security",
+    //         "max-age=31536000; includeSubDomains"
+    //     );
+    //     next();
+    // });
 
     app.use((req, res, next) => {
         if (req.header("x-forwarded-proto") !== "https") {
@@ -46,13 +89,14 @@ if (process.env.NODE_ENV !== "production") {
 
     app.use(
         cors({
-            origin: "https://minhman.net", //Chan tat ca cac domain khac ngoai domain nay
+            origin: "https://minhman.xyz", //Chan tat ca cac domain khac ngoai domain nay
+            // origin: "http://127.0.0.1:5000", //Chan tat ca cac domain khac ngoai domain nay
             credentials: true, //Để bật cookie HTTP qua CORS
         })
     );
 }
 
-if (process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV !== "production") {
     app.use(morgan("dev"));
 }
 
@@ -76,6 +120,8 @@ app.get("/api/config", (req, res) =>
         url:
             process.env.NODE_ENV === "production"
                 ? process.env.PUBLIC_URL
+                : process.env.NODE_ENV === "testing"
+                ? process.env.TEST_URL
                 : process.env.DEV_URL,
         maxFileSize: process.env.MAX_FILE_SIZE,
         base64MaxFileSize: process.env.BASE64_MAX_FILE_SIZE,
@@ -84,13 +130,16 @@ app.get("/api/config", (req, res) =>
     })
 );
 
-if (process.env.NODE_ENV !== "production") {
-    const __dirname = path.resolve();
-    app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
-    console.log("DIRNAME: " + __dirname);
-}
+const __dirname = path.resolve();
+// if (process.env.NODE_ENV !== "production") {
+app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
+console.log("DIRNAME: " + __dirname);
+// }
 
-if (process.env.NODE_ENV === "testing") {
+if (
+    process.env.NODE_ENV === "production" ||
+    process.env.NODE_ENV === "testing"
+) {
     app.use(express.static(path.join(__dirname, "/frontend/build")));
 
     app.get("*", (req, res) =>
@@ -107,11 +156,22 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5001;
 
-app.listen(PORT, () => {
-    console.log(
-        colors.yellow.bold(
-            `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
-            // + "at 2023-03-06, 18:29:30"
-        )
-    );
-});
+if (process.env.NODE_ENV !== "production") {
+    https.createServer(options, app).listen(PORT, () => {
+        console.log(
+            colors.yellow.bold(
+                `Server running in ${process.env.NODE_ENV} mode on port ${PORT} using self-serve SSL Cert.`
+                // + "at 2023-03-06, 18:29:30"
+            )
+        );
+    });
+} else {
+    app.listen(PORT, () => {
+        console.log(
+            colors.yellow.bold(
+                `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
+                // + "at 2023-03-06, 18:29:30"
+            )
+        );
+    });
+}
