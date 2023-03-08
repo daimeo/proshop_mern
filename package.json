@@ -38,6 +38,8 @@
         "gulp": "^4.0.2",
         "gulp-cli": "^2.3.0",
         "gulp-zip": "^5.1.0",
+        "helmet": "^6.0.1",
+        "helmet-csp": "^3.4.0",
         "http-errors": "^2.0.0",
         "http-proxy-middleware": "^2.0.6",
         "jsonwebtoken": "^9.0.0",

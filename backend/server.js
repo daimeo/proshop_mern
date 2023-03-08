@@ -12,13 +12,45 @@ import orderRoutes from "./routes/orderRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import cookieParser from "cookie-parser";
-// import cors from "cors";
+import cors from "cors";
 
 dotenv.config();
 
 connectDB().then();
 
 const app = express();
+
+if (process.env.NODE_ENV !== "production") {
+    app.use(
+        cors({
+            origin: "http://127.0.0.1:5000", //Chan tat ca cac domain khac ngoai domain nay
+            credentials: true, //Để bật cookie HTTP qua CORS
+        })
+    );
+} else if (process.env.NODE_ENV === "production") {
+    app.use((req, res, next) => {
+        res.set(
+            "Strict-Transport-Security",
+            "max-age=31536000; includeSubDomains"
+        );
+        next();
+    });
+
+    app.use((req, res, next) => {
+        if (req.header("x-forwarded-proto") !== "https") {
+            res.redirect(`https://${req.header("host")}${req.url}`);
+        } else {
+            next();
+        }
+    });
+
+    app.use(
+        cors({
+            origin: "https://minhman.net", //Chan tat ca cac domain khac ngoai domain nay
+            credentials: true, //Để bật cookie HTTP qua CORS
+        })
+    );
+}
 
 if (process.env.NODE_ENV === "development") {
     app.use(morgan("dev"));
@@ -28,13 +60,6 @@ if (process.env.NODE_ENV === "development") {
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser()); //cookie-parser dùng để đọc cookies của request
-
-// app.use(
-//     cors({
-//         origin: "http://127.0.0.1:5000", //Chan tat ca cac domain khac ngoai domain nay
-//         credentials: true, //Để bật cookie HTTP qua CORS
-//     })
-// );
 
 app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes);
@@ -71,10 +96,10 @@ if (process.env.NODE_ENV === "testing") {
     app.get("*", (req, res) =>
         res.sendFile(path.resolve(__dirname, "frontend", "build", "index.html"))
     );
-    // } else {
-    //     app.get("/", (req, res) => {
-    //         res.send("API is running....");
-    //     });
+} else {
+    app.get("/", (req, res) => {
+        res.send("API is running....");
+    });
 }
 
 app.use(notFound);
@@ -85,7 +110,8 @@ const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
     console.log(
         colors.yellow.bold(
-            `Server running in ${process.env.NODE_ENV} mode on port ${PORT} at 2023-03-06, 18:29:30`
+            `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
+            // + "at 2023-03-06, 18:29:30"
         )
     );
 });
