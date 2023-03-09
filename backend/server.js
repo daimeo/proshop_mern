@@ -101,8 +101,8 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 // app.use(express.json()); // for parsing application/json
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser()); //cookie-parser dùng để đọc cookies của request
 
 app.use("/api/products", productRoutes);
@@ -147,7 +147,7 @@ if (
     );
 } else {
     app.get("/", (req, res) => {
-        res.send("API is running....");
+        res.send("API is running...");
     });
 }
 
@@ -156,7 +156,7 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5001;
 
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV === "testing") {
     https.createServer(options, app).listen(PORT, () => {
         console.log(
             colors.yellow.bold(

@@ -87,7 +87,6 @@ const initialState = {
     },
     userLogin: { userInfo: userInfoFromStorage },
 };
-
 const middleware = [thunk];
 
 const store = createStore(
@@ -96,10 +95,8 @@ const store = createStore(
     composeWithDevTools(applyMiddleware(...middleware))
 );
 
-// const store = configureStore(
-//     reducer,
-//     initialState,
-//     composeWithDevTools(applyMiddleware(...middleware))
-// );
+// const storeRTK = configureStore({
+//     reducer: reducer,
+// });
 
 export default store;
