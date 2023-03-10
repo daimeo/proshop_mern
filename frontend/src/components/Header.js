@@ -1,10 +1,18 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { LinkContainer } from "react-router-bootstrap";
-import { Navbar, Nav, Container, NavDropdown } from "react-bootstrap";
+import {
+    Navbar,
+    Nav,
+    Container,
+    NavDropdown,
+    ToggleButton,
+    ToggleButtonGroup,
+} from "react-bootstrap";
 import SearchBox from "./SearchBox";
 import { logoutUser } from "../actions/userActions";
+import { useTranslation } from "react-i18next";
 
 const Header = () => {
     const dispatch = useDispatch();
@@ -12,9 +20,47 @@ const Header = () => {
     const userLogin = useSelector((state) => state.userLogin);
     const { userInfo } = userLogin;
 
+    // react-i18next
+    const { t, i18n } = useTranslation();
     const logoutHandler = () => {
         // dispatch(logout());
         dispatch(logoutUser());
+    };
+
+    const [language, setLanguage] = useState("vn");
+    const [languageChanged, setLanguageChanged] = useState(false);
+    const [isEnglishSelected, setIsEnglishSelected] = useState(false);
+    const [isVietnameseSelected, setIsVietnameseSelected] = useState(true);
+
+    useEffect(() => {
+        // Force NavDropdown to re-render when language changes
+        i18n.on("languageChanged", () => {
+            setLanguageChanged(true);
+        });
+        return () => {
+            i18n.off("languageChanged");
+        };
+    }, [i18n]);
+
+    const handleLanguageChange = (val) => {
+        setLanguage(val);
+        i18n.changeLanguage(val).then(console.log(val));
+    };
+
+    const handleToggleChange = (event) => {
+        if (event.target.name === "english") {
+            setIsEnglishSelected(true);
+            setIsVietnameseSelected(false);
+            setLanguage("en");
+            i18n.changeLanguage("en");
+            // set the i18next language to English
+        } else if (event.target.name === "vietnamese") {
+            setIsVietnameseSelected(true);
+            setIsEnglishSelected(false);
+            setLanguage("en");
+            i18n.changeLanguage("vn");
+            // set the i18next language to Vietnamese
+        }
     };
 
     return (
@@ -36,7 +82,8 @@ const Header = () => {
                         <Nav className="ms-auto ml-auto">
                             <LinkContainer to="/cart">
                                 <Nav.Link>
-                                    <i className="fa fa-cart-shopping"></i> Cart
+                                    <i className="fa fa-cart-shopping"></i>{" "}
+                                    {t("Cart")}
                                 </Nav.Link>
                             </LinkContainer>
                             {userInfo ? (
@@ -46,7 +93,7 @@ const Header = () => {
                                 >
                                     <LinkContainer to="/profile">
                                         <NavDropdown.Item>
-                                            Profile
+                                            {t("Profile")}
                                         </NavDropdown.Item>
                                     </LinkContainer>
                                     {/*<NavDropdown.Divider />*/}
@@ -74,13 +121,14 @@ const Header = () => {
                                     {/*)}*/}
                                     {/*<NavDropdown.Divider />*/}
                                     <NavDropdown.Item onClick={logoutHandler}>
-                                        Logout
+                                        {t("Logout")}
                                     </NavDropdown.Item>
                                 </NavDropdown>
                             ) : (
                                 <LinkContainer to="/login">
                                     <Nav.Link>
-                                        <i className="fas fa-user"></i> Sign In
+                                        <i className="fas fa-user"></i>{" "}
+                                        {t("Sign In")}
                                     </Nav.Link>
                                 </LinkContainer>
                             )}
@@ -88,17 +136,17 @@ const Header = () => {
                                 <NavDropdown title="Admin Menu" id="adminmenu">
                                     <LinkContainer to="/admin/userlist">
                                         <NavDropdown.Item>
-                                            Users
+                                            {t("Users")}
                                         </NavDropdown.Item>
                                     </LinkContainer>
                                     <LinkContainer to="/admin/productlist">
                                         <NavDropdown.Item>
-                                            Products
+                                            {t("Products")}
                                         </NavDropdown.Item>
                                     </LinkContainer>
                                     <LinkContainer to="/admin/orderlist">
                                         <NavDropdown.Item>
-                                            Orders
+                                            {t("Orders")}
                                         </NavDropdown.Item>
                                     </LinkContainer>
                                 </NavDropdown>
@@ -115,6 +163,46 @@ const Header = () => {
                             {/*        </LinkContainer>*/}
                             {/*    </NavDropdown>*/}
                             {/*)}*/}
+                            {/*<NavDropdown*/}
+                            {/*    title={t("Language")}*/}
+                            {/*    id="languagemenu"*/}
+                            {/*>*/}
+                            <ToggleButtonGroup
+                                type={"radio"}
+                                name={"language"}
+                                value={language}
+                                onChange={handleLanguageChange}
+                                size={"sm"}
+                                vertical={false}
+                            >
+                                {/*<NavDropdown.Item>*/}
+                                <ToggleButton
+                                    id={"en"}
+                                    name={"english"}
+                                    // type={"radio"}
+                                    variant="outline-dark"
+                                    value={"en"}
+                                    checked={language === "en"}
+                                    // onChange={handleToggleChange}
+                                >
+                                    EN
+                                </ToggleButton>
+                                {/*</NavDropdown.Item>*/}
+                                {/*<NavDropdown.Item>*/}
+                                <ToggleButton
+                                    id={"vn"}
+                                    name={"vietnamese"}
+                                    // type={"radio"}
+                                    variant="outline-dark"
+                                    value={"en"}
+                                    checked={language === "vn"}
+                                    // onChange={handleToggleChange}
+                                >
+                                    VN
+                                </ToggleButton>
+                                {/*</NavDropdown.Item>*/}
+                            </ToggleButtonGroup>
+                            {/*</NavDropdown>*/}
                         </Nav>
                     </Navbar.Collapse>
                 </Container>

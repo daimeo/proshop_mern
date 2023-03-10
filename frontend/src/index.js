@@ -6,6 +6,8 @@ import "./bootstrap.min.css";
 import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
+// import i18n (needs to be bundled when build)
+import "./i18n";
 
 const root = createRoot(document.getElementById("root"));
 root.render(

@@ -287,6 +287,8 @@ const ProductScreen = () => {
                                                     </option>
                                                 </Form.Control>
                                             </Form.Group>
+                                            // TODO: DOMPurify to sanitize user
+                                            input comment
                                             <Form.Group controlId="comment">
                                                 <Form.Label>Comment</Form.Label>
                                                 <Form.Control

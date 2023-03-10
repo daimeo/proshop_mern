@@ -26,40 +26,11 @@ const app = express();
 
 let options;
 
-if (process.env.NODE_ENV !== "production") {
-    // const rl = readline.createInterface({
-    //     input: process.stdin,
-    //     output: process.stdout,
-    // });
-    // rl.question(
-    //     "Please input the passphrase for private key: ",
-    //     (passphrase) => {
-    options = {
-        key: fs.readFileSync("backend/key.pem", "utf-8"),
-        cert: fs.readFileSync("backend/cert.pem", "utf8"),
-        passphrase: "TesterSGB@t3sting",
-    };
-    // }
-    // );
-    app.use(helmet());
-    // app.use((req, res, next) => {
-    //     if (req.header("x-forwarded-proto") !== "https") {
-    //         return res.redirect(`https://${req.header("host")}${req.url}`);
-    //         // } else {
-    //     }
-    //     next();
-    // });
-    app.use(
-        cors({
-            origin: "https://127.0.0.1:5000", //Chan tat ca cac domain khac ngoai domain nay
-            credentials: true, //Để bật cookie HTTP qua CORS
-        })
-    );
-} else if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV === "production") {
     app.use(
         helmet({
             hsts: {
-                maxAge: 63072000,
+                maxAge: 86400,
                 preload: true,
             },
         })
@@ -86,11 +57,19 @@ if (process.env.NODE_ENV !== "production") {
             next();
         }
     });
+}
 
+if (process.env.NODE_ENV !== "production") {
+    app.use(
+        cors({
+            origin: "http://127.0.0.1:5000", //Chan tat ca cac domain khac ngoai domain nay
+            credentials: true, //Để bật cookie HTTP qua CORS
+        })
+    );
+} else if (process.env.NODE_ENV === "production") {
     app.use(
         cors({
             origin: "https://minhman.xyz", //Chan tat ca cac domain khac ngoai domain nay
-            // origin: "http://127.0.0.1:5000", //Chan tat ca cac domain khac ngoai domain nay
             credentials: true, //Để bật cookie HTTP qua CORS
         })
     );
@@ -101,8 +80,8 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 // app.use(express.json()); // for parsing application/json
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser()); //cookie-parser dùng để đọc cookies của request
 
 app.use("/api/products", productRoutes);
@@ -131,10 +110,31 @@ app.get("/api/config", (req, res) =>
 );
 
 const __dirname = path.resolve();
+
 // if (process.env.NODE_ENV !== "production") {
-app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
-console.log("DIRNAME: " + __dirname);
+app.use("/resources", express.static(path.join(__dirname, "./resources")));
+app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
+// console.log("DIRNAME UPLOADS: " + path.join(__dirname, "./resources"));
 // }
+
+// API for serving translation to the client
+app.get("/api/locales/:lng/:ns", (req, res) => {
+    const { lng, ns } = req.params; // lng: language; ns: namespace (i.e: vn/mienNam; vn/mienBac; ...)
+    // const filePath = `resources/locales/${lng}/${ns}.json`;
+    const filePath = path.resolve(
+        __dirname,
+        `resources/locales/${lng}/${ns}.json`
+    );
+    console.log("FILE PATH LOCALES: " + filePath);
+    fs.readFile(filePath, "utf-8", (err, data) => {
+        if (err) {
+            console.error(`Error reading file: ${filePath}`);
+            console.error(err);
+            return res.sendStatus(500);
+        }
+        res.json(JSON.parse(data));
+    });
+});
 
 if (
     process.env.NODE_ENV === "production" ||

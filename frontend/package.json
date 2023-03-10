@@ -24,6 +24,8 @@
         "fs-extra": "^11.1.0",
         "html-react-parser": "^3.0.8",
         "i18next": "^22.4.11",
+        "i18next-browser-languagedetector": "^7.0.1",
+        "i18next-http-backend": "^2.1.1",
         "js-base64": "^3.7.4",
         "js-cookie": "^3.0.1",
         "luxon": "^3.2.1",
